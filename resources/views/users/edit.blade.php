@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User - HR Document Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: 1px solid rgba(0, 0, 0, 0.125);
+        }
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+        .required-field::after {
+            content: " *";
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-file-contract"></i> HR Document Management
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('dashboard') }}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('documents.index') }}">
+                            <i class="fas fa-file-alt"></i> Documents
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('applicants.index') }}">
+                            <i class="fas fa-users"></i> Applicants
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ route('users.index') }}">
+                            <i class="fas fa-user-cog"></i> Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('document-types.index') }}">
+                            <i class="fas fa-cog"></i> Settings
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    @auth
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user"></i> {{ Auth::user()->name }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('logout') }}"
+                                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    </a>
+                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                        @csrf
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    @else
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('login') }}">Login</a>
+                        </li>
+                    @endauth
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="fas fa-user-edit"></i> Edit User
+            </h1>
+            <a href="{{ route('users.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Users
+            </a>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-user-circle"></i> User Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @if($errors->any())
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Please fix the following errors:</strong>
+                                <ul class="mb-0 mt-2">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        @endif
+
+                        <form method="POST" action="{{ route('users.update', $user->id) }}">
+                            @csrf
+                            @method('PUT')
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="name" class="form-label required-field">Full Name</label>
+                                    <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                                           id="name" name="name" value="{{ old('name', $user->name) }}" 
+                                           placeholder="Enter full name" required>
+                                    @error('name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label required-field">Email Address</label>
+                                    <input type="email" class="form-control @error('email') is-invalid @enderror" 
+                                           id="email" name="email" value="{{ old('email', $user->email) }}" 
+                                           placeholder="Enter email address" required>
+                                    @error('email')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                                           id="password" name="password" 
+                                           placeholder="Enter new password (optional)">
+                                    @error('password')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle"></i> Leave blank to keep current password
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="password_confirmation" class="form-label">Confirm Password</label>
+                                    <input type="password" class="form-control" 
+                                           id="password_confirmation" name="password_confirmation" 
+                                           placeholder="Confirm new password">
+                                    <div class="form-text">
+                                        <i class="fas fa-shield-alt"></i> Re-enter the new password for confirmation
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="role" class="form-label required-field">Role</label>
+                                    <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required>
+                                        <option value="">Select a role</option>
+                                        <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Administrator</option>
+                                        <option value="hr_manager" {{ old('role', $user->role) == 'hr_manager' ? 'selected' : '' }}>HR Manager</option>
+                                        <option value="hr_staff" {{ old('role', $user->role) == 'hr_staff' ? 'selected' : '' }}>HR Staff</option>
+                                    </select>
+                                    @error('role')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label required-field">Status</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="is_active" id="active" 
+                                               value="1" {{ old('is_active', $user->is_active) ? 'checked' : '' }} required>
+                                        <label class="form-check-label" for="active">
+                                            <span class="badge bg-success">Active</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="is_active" id="inactive" 
+                                               value="0" {{ !old('is_active', $user->is_active) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="inactive">
+                                            <span class="badge bg-secondary">Inactive</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center border-top pt-4 mt-3">
+                                <a href="{{ route('users.index') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                                <div>
+                                    <button type="reset" class="btn btn-outline-danger me-2">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Update User
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <!-- User Summary -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-info-circle"></i> User Summary
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-3">
+                            <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                 style="width: 80px; height: 80px;">
+                                <i class="fas fa-user fa-2x text-white"></i>
+                            </div>
+                            <h5 class="mt-3">{{ $user->name }}</h5>
+                            @if($user->role == 'admin')
+                                <span class="badge bg-danger">Administrator</span>
+                            @elseif($user->role == 'hr_manager')
+                                <span class="badge bg-warning">HR Manager</span>
+                            @else
+                                <span class="badge bg-info">HR Staff</span>
+                            @endif
+                        </div>
+                        
+                        <div class="small">
+                            <div class="d-flex justify-content-between border-bottom py-2">
+                                <span class="text-muted">User ID:</span>
+                                <strong>#{{ $user->id }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between border-bottom py-2">
+                                <span class="text-muted">Email:</span>
+                                <strong>{{ $user->email }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between border-bottom py-2">
+                                <span class="text-muted">Status:</span>
+                                @if($user->is_active)
+                                    <span class="badge bg-success">Active</span>
+                                @else
+                                    <span class="badge bg-secondary">Inactive</span>
+                                @endif
+                            </div>
+                            <div class="d-flex justify-content-between border-bottom py-2">
+                                <span class="text-muted">Created:</span>
+                                <strong>{{ $user->created_at->format('M d, Y') }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between py-2">
+                                <span class="text-muted">Last Updated:</span>
+                                <strong>{{ $user->updated_at->format('M d, Y') }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role Information -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-shield-alt"></i> Role Permissions
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="small">
+                            <div class="mb-3">
+                                <span class="badge bg-danger mb-2">Administrator</span>
+                                <ul class="list-unstyled small text-muted">
+                                    <li><i class="fas fa-check text-success me-1"></i> Full system access</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> User management</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> System settings</li>
+                                </ul>
+                            </div>
+                            <div class="mb-3">
+                                <span class="badge bg-warning mb-2">HR Manager</span>
+                                <ul class="list-unstyled small text-muted">
+                                    <li><i class="fas fa-check text-success me-1"></i> Manage documents</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> View all HR pillars</li>
+                                    <li><i class="fas fa-times text-danger me-1"></i> Cannot manage users</li>
+                                </ul>
+                            </div>
+                            <div class="mb-0">
+                                <span class="badge bg-info mb-2">HR Staff</span>
+                                <ul class="list-unstyled small text-muted">
+                                    <li><i class="fas fa-check text-success me-1"></i> Upload documents</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> View assigned pillars</li>
+                                    <li><i class="fas fa-times text-danger me-1"></i> Limited access</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Password confirmation validation
+        document.getElementById('password')?.addEventListener('input', function() {
+            const password = this.value;
+            const confirmPassword = document.getElementById('password_confirmation');
+            
+            if (password && confirmPassword.value) {
+                if (password !== confirmPassword.value) {
+                    confirmPassword.setCustomValidity('Passwords do not match');
+                } else {
+                    confirmPassword.setCustomValidity('');
+                }
+            }
+        });
+
+        document.getElementById('password_confirmation')?.addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = this.value;
+            
+            if (password && confirmPassword) {
+                if (password !== confirmPassword) {
+                    this.setCustomValidity('Passwords do not match');
+                } else {
+                    this.setCustomValidity('');
+                }
+            }
+        });
+
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('password_confirmation').value;
+            
+            if (password && password !== confirmPassword) {
+                e.preventDefault();
+                alert('Passwords do not match. Please check your entries.');
+            }
+        });
+    </script>
+</body>
+</html>
