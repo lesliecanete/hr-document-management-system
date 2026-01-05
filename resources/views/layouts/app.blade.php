@@ -64,7 +64,6 @@
             padding: 20px 15px;
             background: #34495e;
             border-bottom: 1px solid #4a6278;
-            height: 70px;
             white-space: nowrap;
             overflow: hidden;
         }
@@ -75,10 +74,14 @@
             font-weight: 600;
             font-size: 1.1rem;
             white-space: nowrap;
+            display : block;
         }
         
         .sidebar.collapsed .sidebar-header .logo span {
             display: none;
+        }
+        .sidebar.collapsed .sidebar-header .logo img{
+            height: 27px !important;
         }
         
         .menu-text {
@@ -192,9 +195,10 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <a href="/" class="logo">
-                <i class="fas fa-file-contract"></i> 
-                <span class="menu-text">HR Document Management System</span>
+            <a href="/" class="logo d-flex align-items-center">
+                <img src="{{ asset('images/depedtagbilaran-logo.jpg') }}" alt="DEPED Logo" 
+                class="me-2" style="height: 40px; width: auto;">
+                <span class="menu-text">HR Document Management</span>
             </a>
         </div>
         
@@ -283,9 +287,12 @@
         <nav class="navbar navbar-top">
             <div class="container-fluid">
                 <button class="toggle-btn" id="sidebarToggle">
-                    <i class="fas fa-bars"></i>
+                    <i class="fas fa-bars"></i> 
                 </button>
-                
+                <div>
+                    <h4>HR Document Management System</h4>
+                    <p style="text-align:center" class="m-0">Division of Tagbilaran</p>
+                </div>
                 <div class="d-flex align-items-center">
                     @auth
                         <div class="dropdown">
@@ -395,5 +402,7 @@
     </script>
     
     @stack('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

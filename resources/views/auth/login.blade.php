@@ -32,7 +32,8 @@
         <div class="login-header">
             <div class="container">
                 <h1 class="display-4 mb-3">
-                    <i class="fas fa-file-contract"></i> HR Document Management System
+                    <img src="{{ asset('images/depedtagbilaran-logo.jpg') }}" alt="DEPED Logo" 
+                        class="me-2" style="height: 70px; width: auto;"> HR Document Management System
                 </h1>
                 <p class="lead">Division of Tagbilaran City</p>
             </div>

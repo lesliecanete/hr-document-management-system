@@ -1,72 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document Types - Settings</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-file-contract"></i> HR Document Management
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('dashboard') }}">
-                            <i class="fas fa-tachometer-alt"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('documents.index') }}">
-                            <i class="fas fa-file-alt"></i> Documents
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('users.index') }}">
-                            <i class="fas fa-user-cog"></i> Users
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ route('document-types.index') }}">
-                            <i class="fas fa-cog"></i> Settings
-                        </a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    @auth
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user"></i> {{ Auth::user()->name }}
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('logout') }}"
-                                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                        <i class="fas fa-sign-out-alt"></i> Logout
-                                    </a>
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                        @csrf
-                                    </form>
-                                </li>
-                            </ul>
-                        </li>
-                    @else
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('login') }}">Login</a>
-                        </li>
-                    @endauth
-                </ul>
-            </div>
-        </div>
-    </nav>
+@extends('layouts.app')
 
+@section('title', 'Document Types')
+
+@section('content')
     <div class="container mt-4">
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -98,7 +34,8 @@
                                     <th>Name</th>
                                     <th>HR Pillar</th>
                                     <th>Retention Years</th>
-                                    <th>Requires Employee</th>
+                                    <th style="display:none">Requires Employee</th>
+                                    <th>Documents</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
@@ -116,12 +53,17 @@
                                     <td>
                                         <span class="badge bg-info">{{ $documentType->retention_years }} years</span>
                                     </td>
-                                    <td>
+                                    <td style="display:none">
                                         @if($documentType->requires_employee)
                                             <span class="badge bg-success">Yes</span>
                                         @else
                                             <span class="badge bg-secondary">No</span>
                                         @endif
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ $documentType->documents()->count() > 0 ? 'primary' : 'secondary' }}">
+                                            {{ $documentType->documents()->count() }}
+                                        </span>
                                     </td>
                                     <td>
                                         @if($documentType->is_active)
@@ -143,6 +85,17 @@
                                                 data-is-active="{{ $documentType->is_active ? '1' : '0' }}">
                                             <i class="fas fa-edit"></i>
                                         </button>
+                                          <!-- Add delete form -->
+                                        <form action="{{ route('document-types.destroy', $documentType) }}" method="POST" 
+                                            class="d-inline" onsubmit="return confirmDelete({{ $documentType->documents()->count() }})">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-outline-danger" 
+                                                    title="{{ $documentType->documents()->count() > 0 ? 'Cannot delete: ' . $documentType->documents()->count() . ' documents associated' : 'Delete' }}"
+                                                    @if($documentType->documents()->count() > 0) disabled @endif>
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -179,7 +132,7 @@
                         <div class="mb-3">
                             <label for="pillar_id" class="form-label">HR Pillar *</label>
                             @if(isset($pillars) && $pillars->count() > 0)
-                                <select class="form-select" name="pillar_id">
+                                <select class="form-select" name="pillar_id" required>
                                     <option value="">Select HR Pillar</option>
                                     @foreach($pillars as $pillar)
                                         <option value="{{ $pillar->id }}">{{ $pillar->name }}</option>
@@ -195,7 +148,7 @@
                         
                         <div class="mb-3">
                             <label for="retention_years" class="form-label">Retention Years *</label>
-                            <input type="number" class="form-control" id="retention_years" name="retention_years" min="1" required>
+                            <input type="number" class="form-control" id="retention_years" name="retention_years" min="0" required>
                             <div class="form-text">Number of years to keep documents before archiving</div>
                         </div>
                         
@@ -204,7 +157,7 @@
                             <textarea class="form-control" id="description" name="description" rows="3"></textarea>
                         </div>
                         
-                        <div class="mb-3 form-check">
+                        <div class="mb-3 form-check" style="display: none">
                             <input type="checkbox" class="form-check-input" id="requires_employee" name="requires_employee" value="1">
                             <label class="form-check-label" for="requires_employee">Requires Employee Association</label>
                         </div>
@@ -255,7 +208,7 @@
                             <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
                         </div>
                         
-                        <div class="mb-3 form-check">
+                        <div class="mb-3 form-check" style="display:none">
                             <input type="checkbox" class="form-check-input" id="edit_requires_employee" name="requires_employee" value="1">
                             <label class="form-check-label" for="edit_requires_employee">Requires Employee Association</label>
                         </div>
@@ -274,7 +227,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
         // Edit modal functionality
@@ -307,5 +259,16 @@
             });
         });
     </script>
-</body>
-</html>
+    @push('scripts')
+    <script>
+    function confirmDelete(documentCount) {
+        if (documentCount > 0) {
+            alert('Cannot delete this document type. There are ' + documentCount + ' documents associated with it.');
+            return false;
+        }
+        
+        return confirm('Are you sure you want to delete this document type?');
+    }
+    </script>
+    @endpush
+@endsection

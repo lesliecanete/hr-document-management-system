@@ -41,7 +41,7 @@ class DocumentTypeController extends Controller
             'is_active' => true,
         ]);
 
-        return redirect()->route('settings.document-types')
+        return redirect()->route('document-types.index')
             ->with('success', 'Document type created successfully.');
     }
 

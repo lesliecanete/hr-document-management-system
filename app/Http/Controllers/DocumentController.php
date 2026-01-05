@@ -18,7 +18,7 @@ class DocumentController extends Controller
 
         if ($request->filled('pillar')) {
             $query->whereHas('documentType.pillar', function($q) use ($request) {
-                $q->where('slug', $request->pillar);
+                $q->where('name', $request->pillar);
             });
         }
 
