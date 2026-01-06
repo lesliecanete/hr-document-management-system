@@ -55,9 +55,9 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="applicant_id" class="form-label">Applicant (if applicable)</label>
-                                <select class="form-select @error('applicant_id') is-invalid @enderror" id="applicant_id" name="applicant_id">
-                                    <option value="">Select Applicant</option>
+                                <label for="applicant_id" class="form-label">Applicant</label>
+                                <select class="form-select @error('applicant_id') is-invalid @enderror" id="applicant_id" name="applicant_id" required>
+                                    <option value="">Select Applicant *</option>
                                     @foreach($applicants as $applicant)
                                         <option value="{{ $applicant->id }}" {{ old('applicant_id') == $applicant->id ? 'selected' : '' }}>
                                             {{ $applicant->full_name }} - {{ $applicant->applied_position }}

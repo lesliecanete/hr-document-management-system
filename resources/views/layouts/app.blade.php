@@ -69,6 +69,10 @@
         .sidebar.collapsed .nav-link i {
             margin-right: 0;
         }
+        .sidebar .nav-link.dropdown-toggle::after{
+            margin-top: .5em;
+            margin-left: .5em;
+        }
         
         .sidebar-header {
             padding: 20px 15px;
