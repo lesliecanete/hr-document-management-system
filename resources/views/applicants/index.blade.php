@@ -3,37 +3,50 @@
 @section('title', 'Applicants')
 
 @section('content')
-   <div class="container mt-4">
+   <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-1">
+                            <i class="fas fa-user-tie text-primary"></i> Applicants
+                        </h1>
+                        <p class="text-muted mb-0">Manage Applicants</p>
+                    </div>
+                    <a href="{{ route('applicants.create') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i> Add Applicant
+                    </a>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-12">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h4 class="card-title mb-0">
-                            <i class="fas fa-user-tie"></i> Applicants
-                        </h4>
-                        <a href="{{ route('applicants.create') }}" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Add Applicant
-                        </a>
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-list text-muted"></i> Applicants List
+                            <span class="badge bg-secondary ms-2">{{ $applicants->total() ?? 0 }} applicants</span>
+                        </h5>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-0">
                         @if(session('success'))
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
                                 {{ session('success') }}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
                         @endif
 
-                        <!-- Applicants Table -->
-                        @if(isset($applicants) && $applicants->count() > 0)
+                        @if($applicants->count() > 0)
                             <div class="table-responsive">
-                                <table class="table table-striped">
-                                    <thead>
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
                                         <tr>
                                             <th>Name</th>
                                             <th>Email</th>
                                             <th>Phone</th>
                                             <th>Status</th>
-                                            <th>Actions</th>
+                                            <th class="text-end">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -57,23 +70,22 @@
                                                     {{ ucfirst($applicant->status) }}
                                                 </span>
                                             </td>
-                                            <td>
-                                                <div class="btn-group">
-                                                    <a href="{{ route('applicants.show', $applicant->id) }}" 
-                                                       class="btn btn-sm btn-outline-primary" title="View">
+                                            <td class="text-end">
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ route('applicants.show', $applicant) }}" 
+                                                       class="btn btn-outline-primary" title="View">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    <a href="{{ route('applicants.edit', $applicant->id) }}" 
-                                                       class="btn btn-sm btn-outline-warning" title="Edit">
+                                                    <a href="{{ route('applicants.edit', $applicant) }}" 
+                                                       class="btn btn-outline-warning" title="Edit">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    <form action="{{ route('applicants.destroy', $applicant->id) }}" 
-                                                          method="POST" class="d-inline">
+                                                    <form action="{{ route('applicants.destroy', $applicant) }}" 
+                                                          method="POST" class="d-inline"
+                                                          onsubmit="return confirm('Delete this applicant?')">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                                                onclick="return confirm('Are you sure you want to delete this applicant?')"
-                                                                title="Delete">
+                                                        <button type="submit" class="btn btn-outline-danger" title="Delete">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
                                                     </form>
@@ -84,20 +96,33 @@
                                     </tbody>
                                 </table>
                             </div>
-
-                            <!-- Pagination -->
-                            {{ $applicants->links() }}
                         @else
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle"></i> No applicants found.
-                                <a href="{{ route('applicants.create') }}" class="alert-link">Add your first applicant</a>
+                            <div class="text-center py-5">
+                                <div class="mb-3">
+                                    <i class="fas fa-user-tie fa-4x text-muted"></i>
+                                </div>
+                                <h5 class="text-muted">No applicants found</h5>
+                                <p class="text-muted">Start by adding your first applicant</p>
+                                <a href="{{ route('applicants.create') }}" class="btn btn-primary mt-2">
+                                    <i class="fas fa-plus me-1"></i> Add First Applicant
+                                </a>
                             </div>
                         @endif
                     </div>
+                    @if($applicants->hasPages())
+                    <div class="card-footer bg-white py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-muted">
+                                Showing {{ $applicants->firstItem() }} to {{ $applicants->lastItem() }} of {{ $applicants->total() }} applicants
+                            </div>
+                            <div>
+                                {{ $applicants->links() }}
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 @endsection

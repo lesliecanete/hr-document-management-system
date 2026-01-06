@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* Add the CSS from above here */
         .sidebar {
             min-height: 100vh;
             background: #2c3e50;
@@ -36,6 +35,8 @@
             transition: all 0.3s;
             white-space: nowrap;
             overflow: hidden;
+            display: flex;
+            align-items: flex-start;
         }
         
         .sidebar .nav-link:hover {
@@ -54,6 +55,8 @@
             width: 20px;
             margin-right: 15px;
             text-align: center;
+            flex-shrink: 0;
+            margin-top: 2px;
         }
         
         .sidebar.collapsed .nav-link i {
@@ -74,7 +77,8 @@
             font-weight: 600;
             font-size: 1.1rem;
             white-space: nowrap;
-            display : block;
+            display: flex;
+            align-items: center;
         }
         
         .sidebar.collapsed .sidebar-header .logo span {
@@ -88,10 +92,10 @@
             transition: all 0.3s;
             opacity: 1;
             display: inline-block;
-            text-wrap : auto;
-            word-wrap: break-word; /* Break long words if needed */
-            line-height: 1.4; /* Better line height for wrapped text */
-
+            text-wrap: auto;
+            word-wrap: break-word;
+            line-height: 1.4;
+            white-space: normal;
         }
         
         .sidebar.collapsed .menu-text {
@@ -113,6 +117,7 @@
             width: calc(100% - 60px);
         }
         
+        /* FIX: Navbar dropdown z-index fix */
         .navbar-top {
             background: #fff;
             border-bottom: 1px solid #dee2e6;
@@ -120,7 +125,16 @@
             height: 70px;
             position: sticky;
             top: 0;
-            z-index: 999;
+            z-index: 1050; /* Increased */
+        }
+        
+        .navbar-top .dropdown {
+            position: relative;
+            z-index: 1051; /* Higher than navbar */
+        }
+        
+        .navbar-top .dropdown-menu {
+            z-index: 1052 !important; /* Highest */
         }
         
         .toggle-btn {
@@ -146,11 +160,28 @@
             display: none !important;
         }
         
+        /* FIX: Overlay positioning */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 70px; /* Start below navbar */
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1040; /* Below navbar */
+        }
+        
+        .overlay.show {
+            display: block;
+        }
+        
         /* Mobile styles */
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
                 width: 250px;
+                z-index: 1045; /* Below navbar but above overlay */
             }
             
             .sidebar.show {
@@ -172,19 +203,17 @@
                 width: 100% !important;
             }
             
-            .overlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 999;
+            /* FIX: Ensure navbar stays above everything on mobile */
+            .navbar-top {
+                z-index: 1060 !important;
             }
             
-            .overlay.show {
-                display: block;
+            .navbar-top .dropdown {
+                z-index: 1061 !important;
+            }
+            
+            .navbar-top .dropdown-menu {
+                z-index: 1062 !important;
             }
         }
     </style>
@@ -195,7 +224,7 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <a href="/" class="logo d-flex align-items-center">
+            <a href="/" class="logo">
                 <img src="{{ asset('images/depedtagbilaran-logo.jpg') }}" alt="DEPED Logo" 
                 class="me-2" style="height: 40px; width: auto;">
                 <span class="menu-text">HR Document Management</span>
@@ -289,9 +318,9 @@
                 <button class="toggle-btn" id="sidebarToggle">
                     <i class="fas fa-bars"></i> 
                 </button>
-                <div>
-                    <h4>HR Document Management System</h4>
-                    <p style="text-align:center" class="m-0">Division of Tagbilaran</p>
+                <div class="text-center flex-grow-1">
+                    <h4 class="mb-0">HR Document Management System</h4>
+                    <p class="mb-0">Division of Tagbilaran</p>
                 </div>
                 <div class="d-flex align-items-center">
                     @auth
@@ -301,7 +330,7 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                    <a class="dropdown-item" href="{{ url()->previous() }}">
                                         <i class="fas fa-user-edit me-2"></i> Profile
                                     </a>
                                 </li>
@@ -402,7 +431,5 @@
     </script>
     
     @stack('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
