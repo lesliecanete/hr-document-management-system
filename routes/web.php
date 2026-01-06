@@ -70,9 +70,14 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/pillars/{pillar}', [PillarController::class, 'destroy'])->name('pillars.destroy');
     });
     
-    // Profile
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    // Profile routes
+    Route::middleware(['auth'])->prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', [ProfileController::class, 'show'])->name('show');
+        Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
+        Route::put('/update', [ProfileController::class, 'update'])->name('update');
+        Route::get('/change-password', [ProfileController::class, 'changePassword'])->name('change-password');
+        Route::put('/update-password', [ProfileController::class, 'updatePassword'])->name('update-password');
+    });
 });
 
 // Document Types API Route (for dynamic dropdown)

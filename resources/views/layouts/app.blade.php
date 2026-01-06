@@ -11,6 +11,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
         .sidebar {
             min-height: 100vh;
             background: #2c3e50;
@@ -84,6 +91,7 @@
         .sidebar.collapsed .sidebar-header .logo span {
             display: none;
         }
+        
         .sidebar.collapsed .sidebar-header .logo img{
             height: 27px !important;
         }
@@ -105,8 +113,10 @@
         }
         
         .main-content {
-            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
             min-height: 100vh;
+            transition: all 0.3s;
             background: #f8f9fa;
             margin-left: 250px;
             width: calc(100% - 250px);
@@ -117,7 +127,6 @@
             width: calc(100% - 60px);
         }
         
-        /* FIX: Navbar dropdown z-index fix */
         .navbar-top {
             background: #fff;
             border-bottom: 1px solid #dee2e6;
@@ -125,16 +134,16 @@
             height: 70px;
             position: sticky;
             top: 0;
-            z-index: 1050; /* Increased */
+            z-index: 1050;
         }
         
         .navbar-top .dropdown {
             position: relative;
-            z-index: 1051; /* Higher than navbar */
+            z-index: 1051;
         }
         
         .navbar-top .dropdown-menu {
-            z-index: 1052 !important; /* Highest */
+            z-index: 1052 !important;
         }
         
         .toggle-btn {
@@ -147,11 +156,11 @@
         }
         
         .content-wrapper {
+            flex: 1 0 auto;
             padding: 20px;
-            min-height: calc(100vh - 70px);
+            min-height: calc(100vh - 140px);
         }
         
-        /* Dropdown menus in collapsed state */
         .sidebar.collapsed .dropdown-toggle::after {
             display: none;
         }
@@ -160,20 +169,33 @@
             display: none !important;
         }
         
-        /* FIX: Overlay positioning */
         .overlay {
             display: none;
             position: fixed;
-            top: 70px; /* Start below navbar */
+            top: 70px;
             left: 0;
             right: 0;
             bottom: 0;
             background: rgba(0,0,0,0.5);
-            z-index: 1040; /* Below navbar */
+            z-index: 1040;
         }
         
         .overlay.show {
             display: block;
+        }
+        
+        /* Footer Styles */
+        .footer {
+            background: #ffffff;
+            border-top: 1px solid #dee2e6;
+            padding: 15px 0;
+            margin-top: auto;
+            width: 100%;
+            z-index: 100;
+        }
+        
+        .footer .container-fluid {
+            max-width: 100%;
         }
         
         /* Mobile styles */
@@ -181,7 +203,7 @@
             .sidebar {
                 transform: translateX(-100%);
                 width: 250px;
-                z-index: 1045; /* Below navbar but above overlay */
+                z-index: 1045;
             }
             
             .sidebar.show {
@@ -203,7 +225,6 @@
                 width: 100% !important;
             }
             
-            /* FIX: Ensure navbar stays above everything on mobile */
             .navbar-top {
                 z-index: 1060 !important;
             }
@@ -214,6 +235,30 @@
             
             .navbar-top .dropdown-menu {
                 z-index: 1062 !important;
+            }
+            
+            .content-wrapper {
+                min-height: calc(100vh - 160px);
+            }
+            
+            .footer {
+                position: relative;
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .footer .d-flex {
+                flex-direction: column !important;
+                text-align: center !important;
+            }
+            
+            .footer .mb-2 {
+                margin-bottom: 10px !important;
+            }
+            
+            .footer img {
+                margin: 0 auto !important;
             }
         }
     </style>
@@ -330,7 +375,7 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
-                                    <a class="dropdown-item" href="{{ url()->previous() }}">
+                                    <a class="dropdown-item" href="{{ route('profile.show') }}">
                                         <i class="fas fa-user-edit me-2"></i> Profile
                                     </a>
                                 </li>
@@ -359,8 +404,37 @@
         <div class="content-wrapper">
             @yield('content')
         </div>
+        
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container-fluid px-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+                    <!-- Left: DepEd Logo -->
+                    <div class="mb-2 mb-md-0">
+                        <div class="d-flex align-items-center">
+                            <img src="{{ asset('images/deped-logo.png') }}" alt="DepEd Logo" height="45" class="me-2">
+                        </div>
+                    </div>
+                    
+                    <!-- Center: Copyright -->
+                    <div class="mb-2 mb-md-0 text-center">
+                        <p class="mb-0 text-muted small">
+                            &copy; 2025 HR Document Management System
+                        </p>
+                        <p class="mb-0 text-muted small">Division of Tagbilaran City</p>
+                    </div>
+                    
+                    <!-- Right: Bagong Pilipinas -->
+                    <div>
+                        <div class="d-flex align-items-center">
+                            <img src="{{ asset('images/bagongpilipinas-logo.png') }}" alt="Bagong Pilipinas" height="45" class="me-2">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
-
+    
     <!-- Mobile Overlay -->
     <div class="overlay" id="overlay"></div>
 
