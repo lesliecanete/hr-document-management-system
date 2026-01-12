@@ -54,20 +54,152 @@
                                 @enderror
                             </div>
 
-                            <div class="mb-3">
-                                <label for="applicant_id" class="form-label">Applicant</label>
-                                <select class="form-select @error('applicant_id') is-invalid @enderror" id="applicant_id" name="applicant_id" required>
-                                    <option value="">Select Applicant *</option>
-                                    @foreach($applicants as $applicant)
-                                        <option value="{{ $applicant->id }}" {{ old('applicant_id') == $applicant->id ? 'selected' : '' }}>
-                                            {{ $applicant->full_name }} - {{ $applicant->applied_position }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                            <!-- ========== APPLICANT TAB SECTION ========== -->
+                            <div class="mb-4">
+                                <label class="form-label">Applicant *</label>
+                                
+                                <!-- Applicant Selection Tabs -->
+                                <ul class="nav nav-tabs mb-3" id="applicantTab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="select-applicant-tab" data-bs-toggle="tab" 
+                                                data-bs-target="#select-applicant-pane" type="button" role="tab">
+                                            <i class="fas fa-search me-1"></i> Select Existing Applicant
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="create-applicant-tab" data-bs-toggle="tab" 
+                                                data-bs-target="#create-applicant-pane" type="button" role="tab">
+                                            <i class="fas fa-user-plus me-1"></i> Create New Applicant
+                                        </button>
+                                    </li>
+                                </ul>
+                                
+                                <!-- Tab Content -->
+                                <div class="tab-content border border-top-0 p-3" id="applicantTabContent">
+                                    <!-- Tab 1: Select Existing Applicant -->
+                                    <div class="tab-pane fade show active" id="select-applicant-pane" role="tabpanel">
+                                        <div class="mb-3">
+                                            <div class="input-group">
+                                                <span class="input-group-text">
+                                                    <i class="fas fa-search"></i>
+                                                </span>
+                                                <input type="text" class="form-control" 
+                                                       id="applicantSearch" 
+                                                       placeholder="Search by name, email, or phone...">
+                                                <button class="btn btn-outline-secondary" type="button" 
+                                                        id="clearSearch">
+                                                    Clear
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="searchResults" style="max-height: 300px; overflow-y: auto;">
+                                            <!-- Search results will appear here -->
+                                            <div class="list-group">
+                                                @foreach($applicants as $applicant)
+                                                <label class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div class="d-flex align-items-center">
+                                                        <input class="form-check-input me-3" type="radio" 
+                                                               name="applicant_id" 
+                                                               value="{{ $applicant->id }}"
+                                                               {{ old('applicant_id') == $applicant->id ? 'checked' : '' }}
+                                                               id="applicant_{{ $applicant->id }}"
+                                                               data-applicant-name="{{ $applicant->full_name }}">
+                                                        <div>
+                                                            <strong>{{ $applicant->full_name }}</strong>
+                                                            <div class="text-muted small">
+                                                                <i class="fas fa-envelope me-1"></i>{{ $applicant->email }}
+                                                                @if($applicant->phone)
+                                                                <br><i class="fas fa-phone me-1"></i>{{ $applicant->phone }}
+                                                                @endif
+                                                                @if($applicant->applied_position)
+                                                                <br><i class="fas fa-briefcase me-1"></i>{{ $applicant->applied_position }}
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <span class="badge bg-{{ $applicant->status === 'active' ? 'success' : 'secondary' }}">
+                                                        {{ ucfirst($applicant->status) }}
+                                                    </span>
+                                                </label>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="noResults" class="alert alert-info mt-3 d-none">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            No applicants found. Try a different search or create a new applicant.
+                                        </div>
+                                        
+                                        <div id="selectedApplicantInfo" class="alert alert-success mt-3 d-none">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            <span id="selectedApplicantText"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Tab 2: Create New Applicant -->
+                                    <div class="tab-pane fade" id="create-applicant-pane" role="tabpanel">
+                                        <div class="alert alert-info mb-3">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            New applicant will be created and automatically selected for this document.
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="new_first_name" class="form-label">First Name *</label>
+                                                <input type="text" class="form-control @error('new_first_name') is-invalid @enderror" 
+                                                       id="new_first_name" 
+                                                       name="new_first_name"
+                                                       value="{{ old('new_first_name') }}">
+                                                @error('new_first_name')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="new_last_name" class="form-label">Last Name *</label>
+                                                <input type="text" class="form-control @error('new_last_name') is-invalid @enderror" 
+                                                       id="new_last_name" 
+                                                       name="new_last_name"
+                                                       value="{{ old('new_last_name') }}">
+                                                @error('new_last_name')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="new_email" class="form-label">Email *</label>
+                                                <input type="email" class="form-control @error('new_email') is-invalid @enderror" 
+                                                       id="new_email" 
+                                                       name="new_email"
+                                                       value="{{ old('new_email') }}">
+                                                @error('new_email')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="new_phone" class="form-label">Phone</label>
+                                                <input type="text" class="form-control @error('new_phone') is-invalid @enderror" 
+                                                       id="new_phone" 
+                                                       name="new_phone"
+                                                       value="{{ old('new_phone') }}">
+                                                @error('new_phone')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        
+                                        
+                                        <input type="hidden" id="applicant_created" name="applicant_created" value="0">
+                                    </div>
+                                </div>
+                                
                                 @error('applicant_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
+                            <!-- ========== END APPLICANT TAB SECTION ========== -->
 
                             <div class="mb-3">
                                 <label for="document_date" class="form-label">Document Date *</label>
@@ -131,6 +263,7 @@
 
             console.log('📄 Document upload page loaded');
 
+            // ========== DOCUMENT TYPE LOADING ==========
             // Load document types when pillar is selected
             pillarSelect.addEventListener('change', function() {
                 const pillarId = this.value;
@@ -216,11 +349,138 @@
                 const requiresPerson = selectedOption.getAttribute('data-requires-person') === 'true';
                 
                 if (requiresPerson) {
-                    documentTypeHelp.textContent = '⚠️ This document type requires an employee association';
+                    documentTypeHelp.textContent = '⚠️ This document type requires an applicant association';
                     documentTypeHelp.className = 'form-text text-warning';
                 } else {
-                    documentTypeHelp.textContent = 'Employee association is optional for this document type';
+                    documentTypeHelp.textContent = 'Applicant association is optional for this document type';
                     documentTypeHelp.className = 'form-text text-muted';
+                }
+            });
+            
+            // ========== APPLICANT TAB FUNCTIONALITY ==========
+            const applicantCreatedInput = document.getElementById('applicant_created');
+            const applicantSearchInput = document.getElementById('applicantSearch');
+            const clearSearchBtn = document.getElementById('clearSearch');
+            const searchResults = document.getElementById('searchResults');
+            const noResults = document.getElementById('noResults');
+            const selectedApplicantInfo = document.getElementById('selectedApplicantInfo');
+            const selectedApplicantText = document.getElementById('selectedApplicantText');
+            
+            // Tab switching logic
+            document.getElementById('create-applicant-tab').addEventListener('click', function() {
+                applicantCreatedInput.value = 1;
+                // Uncheck all existing applicant selections
+                document.querySelectorAll('input[name="applicant_id"]').forEach(radio => {
+                    radio.checked = false;
+                });
+                selectedApplicantInfo.classList.add('d-none');
+            });
+            
+            document.getElementById('select-applicant-tab').addEventListener('click', function() {
+                applicantCreatedInput.value = 0;
+            });
+            
+            // Search functionality
+            applicantSearchInput.addEventListener('keyup', function() {
+                const searchTerm = this.value.toLowerCase();
+                const applicantItems = searchResults.querySelectorAll('.list-group-item');
+                
+                if (searchTerm.length === 0) {
+                    applicantItems.forEach(item => item.style.display = 'flex');
+                    noResults.classList.add('d-none');
+                    return;
+                }
+                
+                let found = false;
+                applicantItems.forEach(function(item) {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        item.style.display = 'flex';
+                        found = true;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+                
+                if (found) {
+                    noResults.classList.add('d-none');
+                } else {
+                    noResults.classList.remove('d-none');
+                }
+            });
+            
+            // Clear search
+            clearSearchBtn.addEventListener('click', function() {
+                applicantSearchInput.value = '';
+                searchResults.querySelectorAll('.list-group-item').forEach(item => {
+                    item.style.display = 'flex';
+                });
+                noResults.classList.add('d-none');
+            });
+            
+            // When selecting an existing applicant
+            document.querySelectorAll('input[name="applicant_id"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        applicantCreatedInput.value = 0;
+                        const applicantName = this.getAttribute('data-applicant-name');
+                        selectedApplicantText.textContent = `Selected: ${applicantName}`;
+                        selectedApplicantInfo.classList.remove('d-none');
+                        
+                        // Switch to select tab if we're on create tab
+                        document.getElementById('create-applicant-tab').classList.remove('active');
+                        document.getElementById('select-applicant-tab').classList.add('active');
+                        document.getElementById('create-applicant-pane').classList.remove('show', 'active');
+                        document.getElementById('select-applicant-pane').classList.add('show', 'active');
+                    }
+                });
+            });
+            
+            // Auto-switch to create tab if form had errors with new applicant
+            @if(empty(old('applicant_id')) && (!empty(old('new_first_name')) || !empty(old('new_last_name')) || !empty(old('new_email'))))
+                document.getElementById('create-applicant-tab').click();
+            @endif
+            
+            // Form validation
+            document.getElementById('documentForm').addEventListener('submit', function(e) {
+                const applicantCreated = applicantCreatedInput.value;
+                const hasSelectedApplicant = document.querySelector('input[name="applicant_id"]:checked') !== null;
+                
+                // Check if we're creating new applicant
+                if (applicantCreated === '1') {
+                    const firstName = document.getElementById('new_first_name').value.trim();
+                    const lastName = document.getElementById('new_last_name').value.trim();
+                    const email = document.getElementById('new_email').value.trim();
+                    
+                    if (!firstName || !lastName || !email) {
+                        e.preventDefault();
+                        alert('Please fill in all required fields for new applicant: First Name, Last Name, and Email.');
+                        document.getElementById('create-applicant-tab').click();
+                        return false;
+                    }
+                    
+                    // Validate email format
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(email)) {
+                        e.preventDefault();
+                        alert('Please enter a valid email address for the new applicant.');
+                        document.getElementById('new_email').focus();
+                        return false;
+                    }
+                } 
+                // Check if we selected existing applicant
+                else if (!hasSelectedApplicant) {
+                    e.preventDefault();
+                    alert('Please either select an existing applicant or create a new one.');
+                    return false;
+                }
+                
+                // Additional validation for document type
+                if (!documentTypeSelect.value) {
+                    e.preventDefault();
+                    alert('Please select a document type.');
+                    documentTypeSelect.focus();
+                    return false;
                 }
             });
             

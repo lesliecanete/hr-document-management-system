@@ -36,14 +36,11 @@ Route::middleware(['auth'])->group(function () {
         
         // ❌ DELETE: Admin & HR Manager ONLY (HR Staff cannot delete)
         // Checked via middleware
-        Route::delete('/{document}', [DocumentController::class, 'destroy'])
-            ->middleware('can:delete,document')
-            ->name('destroy');
+        Route::delete('/{document}', [DocumentController::class, 'destroy'])->name('destroy');
+
             
         // ❌ ARCHIVE: Admin & HR Manager ONLY (HR Staff cannot archive)
-        Route::post('/archive-expired', [DocumentController::class, 'archiveExpired'])
-            ->middleware('can:delete,document')
-            ->name('archive');
+        Route::post('/archive-expired', [DocumentController::class, 'archiveExpired'])->name('archive');
     });
 
     // =================== APPLICANTS ROUTES ===================
@@ -60,9 +57,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{applicant}', [ApplicantController::class, 'update'])->name('update');
         
         // ❌ DELETE: Admin & HR Manager ONLY (HR Staff cannot delete)
-        Route::delete('/{applicant}', [ApplicantController::class, 'destroy'])
-            ->middleware('can:delete,applicant')
-            ->name('destroy');
+        Route::delete('/{applicant}', [ApplicantController::class, 'destroy'])->name('destroy');
     });
 
     // =================== SETTINGS ROUTES ===================

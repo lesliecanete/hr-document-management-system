@@ -20,7 +20,7 @@
                     <i class="fas fa-download"></i> Download
                 </a>
                 @if(auth()->user()->canEditDocument($document))
-                <a href="{{ route('documents.edit', $document) }}" class="btn btn-warning btn-sm">
+                <a href="{{ route('documents.edit', $document) }}" class="btn btn-warning">
                     <i class="fas fa-edit"></i> Edit
                 </a>
                 @endif

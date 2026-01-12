@@ -55,22 +55,49 @@
                                 @enderror
                             </div>
 
-                            <div class="mb-3">
-                                <label for="applicant_id" class="form-label">Applicant</label>
-                                <select class="form-select @error('applicant_id') is-invalid @enderror" id="applicant_id" name="applicant_id">
-                                    <option value="">Select Applicant</option>
-                                    @foreach($applicants as $applicant)
-                                        <option value="{{ $applicant->id }}" 
-                                                {{ old('applicant_id', $document->applicant_id) == $applicant->id ? 'selected' : '' }}>
-                                            {{ $applicant->full_name }} - {{ $applicant->applied_position }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('applicant_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="form-text" id="applicant-requirement-text"></div>
-                            </div>
+                            <!-- Display current applicant as read-only -->
+                            @if($document->applicant_id && $document->applicant)
+                                <div class="mb-3">
+                                    <label class="form-label">Associated Applicant</label>
+                                    <div class="card">
+                                        <div class="card-body py-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user fa-2x me-3 text-primary"></i>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-1">{{ $document->applicant->full_name }}</h6>
+                                                    <div class="small text-muted">
+                                                        @if($document->applicant->email)
+                                                            <i class="fas fa-envelope me-1"></i>{{ $document->applicant->email }}
+                                                        @endif
+                                                        @if($document->applicant->phone)
+                                                            <br><i class="fas fa-phone me-1"></i>{{ $document->applicant->phone }}
+                                                        @endif
+                                                        @if($document->applicant->applied_position)
+                                                            <br><i class="fas fa-briefcase me-1"></i>{{ $document->applicant->applied_position }}
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-text mt-2">
+                                        <i class="fas fa-info-circle"></i> Applicant association cannot be changed.
+                                    </div>
+                                    <!-- Hidden input to preserve applicant_id -->
+                                    <input type="hidden" name="applicant_id" value="{{ $document->applicant_id }}">
+                                </div>
+                            @else
+                                <div class="mb-3">
+                                    <label class="form-label">Applicant Association</label>
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        This document is not associated with any applicant.
+                                    </div>
+                                    <!-- Hidden input with empty value -->
+                                    <input type="hidden" name="applicant_id" value="">
+                                </div>
+                            @endif
 
                             <div class="mb-3">
                                 <label for="document_date" class="form-label">Document Date *</label>
@@ -164,26 +191,22 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const documentTypeSelect = document.getElementById('document_type_id');
-        const applicantSelect = document.getElementById('applicant_id');
-        const applicantRequirementText = document.getElementById('applicant-requirement-text');
-
-        function updateApplicantRequirement() {
+        
+        function updateApplicantInfo() {
             const selectedOption = documentTypeSelect.options[documentTypeSelect.selectedIndex];
             const requiresApplicant = selectedOption.getAttribute('data-requires-applicant') === '1';
             
-            if (requiresApplicant) {
-                applicantRequirementText.innerHTML = '<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> This document type requires an applicant association.</span>';
-                applicantSelect.required = true;
-            } else {
-                applicantRequirementText.innerHTML = 'Optional: Associate this document with an applicant';
-                applicantSelect.required = false;
-            }
+            // Show informational message if document type requires applicant but no applicant is associated
+            @if(!$document->applicant_id)
+                if (requiresApplicant) {
+                    // You could show a toast or alert here if needed
+                    console.log('Selected document type requires an applicant, but this document has none.');
+                }
+            @endif
         }
 
-        documentTypeSelect.addEventListener('change', updateApplicantRequirement);
-        
-        // Initialize on page load
-        updateApplicantRequirement();
+        documentTypeSelect.addEventListener('change', updateApplicantInfo);
+        updateApplicantInfo(); // Initialize
     });
     </script>
 @endsection
