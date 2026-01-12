@@ -31,6 +31,7 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
+                                    <th>ID</th>
                                     <th>Name</th>
                                     <th>HR Pillar</th>
                                     <th>Retention Years</th>
@@ -43,6 +44,11 @@
                             <tbody>
                                 @foreach($documentTypes as $documentType)
                                 <tr>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">
+                                            #{{ str_pad($documentType->id, 3, '0', STR_PAD_LEFT) }}
+                                        </span>
+                                    </td>
                                     <td>
                                         <strong>{{ $documentType->name }}</strong>
                                         @if($documentType->description)

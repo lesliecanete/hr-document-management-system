@@ -38,6 +38,7 @@
                                 <table class="table table-striped">
                                     <thead>
                                         <tr>
+                                            <th>ID</th>
                                             <th>Name</th>
                                             <th>Description</th>
                                             <th>Document Types</th>
@@ -49,9 +50,11 @@
                                         @foreach($pillars as $pillar)
                                         <tr>
                                             <td>
+                                                <strong>{{ $pillar->id }}</strong>
+                                            </td>
+                                            <td>
                                                 <strong>{{ $pillar->name }}</strong>
                                             </td>
-                                          
                                             <td>
                                                 @if($pillar->description)
                                                     {{ Str::limit($pillar->description, 50) }}

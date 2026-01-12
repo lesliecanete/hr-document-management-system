@@ -142,6 +142,9 @@ class DocumentController extends Controller
 
     public function edit(Document $document)
     {
+        if (!auth()->user()->canEditDocument($document)) {
+            abort(403, 'You can only edit documents you uploaded.');
+        }
         $pillars = HRPillar::where('is_active', true)->get();
         $applicants = applicant::where('status', 'active')->get();
         $documentTypes = DocumentType::where('pillar_id', $document->documentType->pillar_id)
@@ -153,6 +156,10 @@ class DocumentController extends Controller
 
     public function update(Request $request, Document $document)
     {
+            
+        if (!auth()->user()->canEditDocument($document)) {
+            abort(403, 'You can only edit documents you uploaded.');
+        }
         $request->validate([
             'title' => 'required|string|max:255',
             'document_type_id' => 'required|exists:document_types,id',
@@ -224,6 +231,9 @@ class DocumentController extends Controller
 
     public function destroy(Document $document)
     {
+        if (!auth()->user()->canDeleteDocument($document)) {
+            abort(403, 'You do not have permission to delete documents.');
+        }
         Storage::disk('public')->delete($document->file_path);
         $document->delete();
 

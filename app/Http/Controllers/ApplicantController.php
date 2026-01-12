@@ -33,6 +33,8 @@ class ApplicantController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'status' => 'active',
+            'user_id' => auth()->id(), // ✅ ADD THIS LINE
+
         ]);
 
         return redirect()->route('applicants.index')
@@ -47,11 +49,17 @@ class ApplicantController extends Controller
 
     public function edit(Applicant $applicant)
     {
+        if (!auth()->user()->canEditApplicant($applicant)) {
+            abort(403, 'You can only edit applicants you added.');
+        }
         return view('applicants.edit', compact('applicant'));
     }
 
     public function update(Request $request, Applicant $applicant)
     {
+        if (!auth()->user()->canEditApplicant($applicant)) {
+            abort(403, 'You can only edit applicants you added.');
+        }
         $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -68,6 +76,10 @@ class ApplicantController extends Controller
 
     public function destroy(Applicant $applicant)
     {
+        if (!auth()->user()->canDeleteApplicant($applicant)) {
+            abort(403, 'You do not have permission to delete applicants.');
+        }
+        
         $applicant->delete();
 
         return redirect()->route('applicants.index')

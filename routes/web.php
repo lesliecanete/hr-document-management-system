@@ -8,8 +8,6 @@ use App\Http\Controllers\DocumentTypeController;
 use App\Http\Controllers\PillarController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Models\HRPillar;
-use App\Models\DocumentType;
 
 Route::get('/', function () {
     return redirect('/dashboard');
@@ -18,60 +16,104 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::middleware(['auth'])->group(function () {
-    // Dashboard
+    // Dashboard - All authenticated users
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    
-    // Documents
-    Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
-    Route::get('/documents/create', [DocumentController::class, 'create'])->name('documents.create');
-    Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
-    Route::get('/documents/{document}', [DocumentController::class, 'show'])->name('documents.show');
-    Route::get('/documents/{document}/edit', [DocumentController::class, 'edit'])->name('documents.edit');
-    Route::put('/documents/{document}', [DocumentController::class, 'update'])->name('documents.update');
-    Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
-    
-    // Document Downloads
-    Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
-    Route::post('/documents/archive-expired', [DocumentController::class, 'archiveExpired'])->name('documents.archive');
-    
-    // Applicants
-    Route::get('/applicants', [ApplicantController::class, 'index'])->name('applicants.index');
-    Route::get('/applicants/create', [ApplicantController::class, 'create'])->name('applicants.create');
-    Route::post('/applicants', [ApplicantController::class, 'store'])->name('applicants.store');
-    Route::get('/applicants/{applicant}', [ApplicantController::class, 'show'])->name('applicants.show');
-    Route::get('/applicants/{applicant}/edit', [ApplicantController::class, 'edit'])->name('applicants.edit');
-    Route::put('/applicants/{applicant}', [ApplicantController::class, 'update'])->name('applicants.update');
-    Route::delete('/applicants/{applicant}', [ApplicantController::class, 'destroy'])->name('applicants.destroy');
-    
-    // Settings Routes
+    Route::get('/', [DashboardController::class, 'index'])->name('home');
+
+    // =================== DOCUMENTS ROUTES ===================
+    Route::prefix('documents')->name('documents.')->group(function () {
+        // ✅ ALL ROLES: Can view, create, upload, download documents
+        Route::get('/', [DocumentController::class, 'index'])->name('index');
+        Route::get('/create', [DocumentController::class, 'create'])->name('create');
+        Route::post('/', [DocumentController::class, 'store'])->name('store');
+        Route::get('/{document}', [DocumentController::class, 'show'])->name('show');
+        Route::get('/{document}/download', [DocumentController::class, 'download'])->name('download');
+        
+        // ⚠️ EDIT: Admin/HR Manager (all), HR Staff (only their own)
+        // Permission checked in controller via $user->canEditDocument($document)
+        Route::get('/{document}/edit', [DocumentController::class, 'edit'])->name('edit');
+        Route::put('/{document}', [DocumentController::class, 'update'])->name('update');
+        
+        // ❌ DELETE: Admin & HR Manager ONLY (HR Staff cannot delete)
+        // Checked via middleware
+        Route::delete('/{document}', [DocumentController::class, 'destroy'])
+            ->middleware('can:delete,document')
+            ->name('destroy');
+            
+        // ❌ ARCHIVE: Admin & HR Manager ONLY (HR Staff cannot archive)
+        Route::post('/archive-expired', [DocumentController::class, 'archiveExpired'])
+            ->middleware('can:delete,document')
+            ->name('archive');
+    });
+
+    // =================== APPLICANTS ROUTES ===================
+    Route::prefix('applicants')->name('applicants.')->group(function () {
+        // ✅ ALL ROLES: Can view, create, add applicants
+        Route::get('/', [ApplicantController::class, 'index'])->name('index');
+        Route::get('/create', [ApplicantController::class, 'create'])->name('create');
+        Route::post('/', [ApplicantController::class, 'store'])->name('store');
+        Route::get('/{applicant}', [ApplicantController::class, 'show'])->name('show');
+        
+        // ⚠️ EDIT: Admin/HR Manager (all), HR Staff (only their own)
+        // Permission checked in controller via $user->canEditApplicant($applicant)
+        Route::get('/{applicant}/edit', [ApplicantController::class, 'edit'])->name('edit');
+        Route::put('/{applicant}', [ApplicantController::class, 'update'])->name('update');
+        
+        // ❌ DELETE: Admin & HR Manager ONLY (HR Staff cannot delete)
+        Route::delete('/{applicant}', [ApplicantController::class, 'destroy'])
+            ->middleware('can:delete,applicant')
+            ->name('destroy');
+    });
+
+    // =================== SETTINGS ROUTES ===================
     Route::prefix('settings')->group(function () {
-        // Users Management (Admin only)
-        Route::middleware(['can:manage-users'])->group(function () {
-            Route::get('/settings/users', [UserController::class, 'index'])->name('users.index');
-            Route::get('/settings/users/create', [UserController::class, 'create'])->name('users.create');
-            Route::post('/settings/users', [UserController::class, 'store'])->name('users.store');
-            Route::get('/settings/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
-            Route::put('/settings/users/{user}', [UserController::class, 'update'])->name('users.update');
-            Route::delete('/settings/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+        // USERS MANAGEMENT
+        Route::prefix('users')->name('users.')->group(function () {
+            // ✅ VIEW: Admin & HR Manager (HR Staff cannot view)
+            Route::get('/', [UserController::class, 'index'])
+                ->middleware('can:view-users')
+                ->name('index');
+            
+            // ❌ MANAGE: Admin ONLY (Create, Edit, Delete)
+            Route::middleware(['can:manage-users'])->group(function () {
+                Route::get('/create', [UserController::class, 'create'])->name('create');
+                Route::post('/', [UserController::class, 'store'])->name('store');
+                Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit');
+                Route::put('/{user}', [UserController::class, 'update'])->name('update');
+                Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
+            });
         });
-       // Document Types routes
-        Route::get('/document-types', [DocumentTypeController::class, 'index'])->name('document-types.index');
-        Route::get('/document-types/create', [DocumentTypeController::class, 'create'])->name('document-types.create');
-        Route::post('/document-types', [DocumentTypeController::class, 'store'])->name('document-types.store'); // Add this line
-        Route::get('/document-types/{documentType}/edit', [DocumentTypeController::class, 'edit'])->name('document-types.edit');
-        Route::put('/document-types/{documentType}', [DocumentTypeController::class, 'update'])->name('document-types.update');
-        Route::delete('/document-types/{documentType}', [DocumentTypeController::class, 'destroy'])->name('document-types.destroy');
-        // HR Pillars routes
-        Route::get('/pillars', [PillarController::class, 'index'])->name('pillars.index');
-        Route::get('/pillars/create', [PillarController::class, 'create'])->name('pillars.create');
-        Route::post('/pillars', [PillarController::class, 'store'])->name('pillars.store');
-        Route::get('/pillars/{pillar}/edit', [PillarController::class, 'edit'])->name('pillars.edit');
-        Route::put('/pillars/{pillar}', [PillarController::class, 'update'])->name('pillars.update');
-        Route::delete('/pillars/{pillar}', [PillarController::class, 'destroy'])->name('pillars.destroy');
+        
+        // DOCUMENT TYPES
+        Route::prefix('document-types')->name('document-types.')->group(function () {
+            // ✅ MANAGE: Admin & HR Manager ONLY (HR Staff cannot access)
+            Route::middleware(['can:manage-document-types'])->group(function () {
+                Route::get('/', [DocumentTypeController::class, 'index'])->name('index');
+                Route::get('/create', [DocumentTypeController::class, 'create'])->name('create');
+                Route::post('/', [DocumentTypeController::class, 'store'])->name('store');
+                Route::get('/{documentType}/edit', [DocumentTypeController::class, 'edit'])->name('edit');
+                Route::put('/{documentType}', [DocumentTypeController::class, 'update'])->name('update');
+                Route::delete('/{documentType}', [DocumentTypeController::class, 'destroy'])->name('destroy');
+            });
+        });
+        
+        // HR PILLARS
+        Route::prefix('pillars')->name('pillars.')->group(function () {
+            // ✅ MANAGE: Admin & HR Manager ONLY (HR Staff cannot access)
+            Route::middleware(['can:manage-pillars'])->group(function () {
+                Route::get('/', [PillarController::class, 'index'])->name('index');
+                Route::get('/create', [PillarController::class, 'create'])->name('create');
+                Route::post('/', [PillarController::class, 'store'])->name('store');
+                Route::get('/{pillar}/edit', [PillarController::class, 'edit'])->name('edit');
+                Route::put('/{pillar}', [PillarController::class, 'update'])->name('update');
+                Route::delete('/{pillar}', [PillarController::class, 'destroy'])->name('destroy');
+            });
+        });
     });
     
-    // Profile routes
-    Route::middleware(['auth'])->prefix('profile')->name('profile.')->group(function () {
+    // =================== PROFILE ROUTES ===================
+    // ✅ ALL ROLES: Can manage their own profile
+    Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', [ProfileController::class, 'show'])->name('show');
         Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
         Route::put('/update', [ProfileController::class, 'update'])->name('update');
@@ -80,7 +122,8 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-// Document Types API Route (for dynamic dropdown)
+// =================== PUBLIC/API ROUTES ===================
+// ✅ ALL ROLES: API for document types dropdown (needed for document creation)
 Route::get('/get-document-types/{pillar}', function ($pillarId) {
     try {
         $documentTypes = \App\Models\DocumentType::where('pillar_id', $pillarId)
@@ -94,10 +137,8 @@ Route::get('/get-document-types/{pillar}', function ($pillarId) {
     }
 })->name('get-document-types');
 
-// Home route (legacy)
+// Legacy home route
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
-Route::get('/get-document-types/{pillarId}', [DocumentController::class, 'getDocumentTypes'])->name('documents.get-types');
 
 Route::get('/debug-data', function() {
     echo "<h2>Database Data Debug</h2>";
@@ -285,3 +326,35 @@ Route::get('/debug-pillars', function () {
     
     return "Debug complete";
 });
+
+Route::get('/debug-permissions', function () {
+    $user = auth()->user();
+    
+    return [
+        'user_id' => $user->id,
+        'role' => $user->role,
+        'isHRManager' => $user->isHRManager(),
+        'canManageDocumentTypes' => $user->canManageDocumentTypes(),
+        'canManagePillars' => $user->canManagePillars(),
+        'all_permissions' => $user->permissions
+    ];
+})->middleware('auth');
+// Add to web.php temporarily
+Route::get('/debug-applicant/{id}', function ($id) {
+    $applicant = \App\Models\Applicant::find($id);
+    $user = auth()->user();
+    
+    if (!$applicant) {
+        return "Applicant not found";
+    }
+    
+    return [
+        'applicant_id' => $applicant->id,
+        'applicant_user_id' => $applicant->user_id,
+        'current_user_id' => $user->id,
+        'current_user_role' => $user->role,
+        'canEditApplicant_result' => $user->canEditApplicant($applicant),
+        'isHRStaff' => $user->isHRStaff(),
+        'comparison' => $applicant->user_id == $user->id,
+    ];
+})->middleware('auth');

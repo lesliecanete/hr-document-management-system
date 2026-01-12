@@ -19,9 +19,11 @@
                 <a href="{{ route('documents.download', $document) }}" class="btn btn-success">
                     <i class="fas fa-download"></i> Download
                 </a>
-                <a href="{{ route('documents.edit', $document) }}" class="btn btn-warning">
+                @if(auth()->user()->canEditDocument($document))
+                <a href="{{ route('documents.edit', $document) }}" class="btn btn-warning btn-sm">
                     <i class="fas fa-edit"></i> Edit
                 </a>
+                @endif
                 <a href="{{ route('documents.index') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Back
                 </a>
@@ -177,6 +179,8 @@
                             <a href="{{ route('documents.edit', $document) }}" class="btn btn-warning">
                                 <i class="fas fa-edit"></i> Edit Details
                             </a>
+                           
+                            @if(auth()->user()->canDeleteDocument($document))
                             <form action="{{ route('documents.destroy', $document) }}" method="POST" 
                                   onsubmit="return confirm('Are you sure you want to delete this document? This action cannot be undone.')">
                                 @csrf
@@ -185,6 +189,7 @@
                                     <i class="fas fa-trash"></i> Delete Document
                                 </button>
                             </form>
+                            @endif
                         </div>
                     </div>
                 </div>

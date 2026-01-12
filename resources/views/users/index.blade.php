@@ -33,8 +33,10 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
+                                    <th>ID</th>
                                     <th>Name</th>
                                     <th>Email</th>
+                                    <th>Phone</th>
                                     <th>Role</th>
                                     <th>Status</th>
                                     <th>Created</th>
@@ -45,12 +47,27 @@
                                 @foreach($users as $user)
                                 <tr>
                                     <td>
+                                        <span class="badge bg-light text-dark border">
+                                            #{{ str_pad($user->id, 3, '0', STR_PAD_LEFT) }}
+                                        </span>
+                                    </td>
+                                    <td>
                                         <strong>{{ $user->name }}</strong>
                                         @if($user->id == auth()->id())
                                             <span class="badge bg-info">You</span>
                                         @endif
                                     </td>
                                     <td>{{ $user->email }}</td>
+                                    <td>
+                                        @if($user->phone)
+                                            <a href="tel:{{ $user->phone }}" class="text-decoration-none">
+                                                <i class="fas fa-phone me-1 text-success"></i>
+                                                {{ $user->phone }}
+                                            </a>
+                                        @else
+                                            <span class="text-muted">Not set</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         @if($user->role == 'admin')
                                             <span class="badge bg-danger">Administrator</span>
@@ -113,47 +130,57 @@
         </div>
 
         <!-- User Roles Legend -->
-        <div class="card mt-4">
-            <div class="card-header">
-                <h6 class="card-title mb-0">User Roles & Permissions</h6>
+       <div class="row g-3">
+            <div class="col-md-4">
+                <div class="card h-100 border-start border-4 border-primary">
+                    <div class="card-body">
+                        <h6 class="card-title d-flex align-items-center">
+                            <i class="fas fa-crown text-primary me-2"></i>
+                            Administrator
+                        </h6>
+                        <div class="small text-muted">
+                            <div class="mb-1"><i class="fas fa-check text-success me-1"></i> Full system access</div>
+                            <div class="mb-1"><i class="fas fa-check text-success me-1"></i> Manage all documents</div>
+                            <div class="mb-1"><i class="fas fa-check text-success me-1"></i> Applicant Management</div>
+                            <div class="mb-1"><i class="fas fa-check text-success me-1"></i> System settings</div>
+                            <div><i class="fas fa-check text-success me-1"></i> Manage HR pillars</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="d-flex align-items-center mb-2">
-                            <span class="badge bg-danger me-2">Administrator</span>
-                            <small>Full system access</small>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-start border-4 border-warning">
+                    <div class="card-body">
+                        <h6 class="card-title d-flex align-items-center">
+                            <i class="fas fa-user-tie text-warning me-2"></i>
+                            HR Manager
+                        </h6>
+                        <div class="small text-muted">
+                            <div class="mb-1"><i class="fas fa-check text-success me-1"></i> Manager access</div>
+                            <div class="mb-1"><i class="fas fa-check text-success me-1"></i> Manage documents</div>
+                            <div class="mb-1"><i class="fas fa-check text-success me-1"></i> Manage HR pillars</div>
+                            <div class="mb-1"><i class="fas fa-check text-success me-1"></i> Applicant management</div>
+                            <div><i class="fas fa-times text-danger me-1"></i>Cannot add users</div>
                         </div>
-                        <ul class="small text-muted">
-                            <li>Manage all documents</li>
-                            <li>User management</li>
-                            <li>System settings</li>
-                            <li>All HR pillars</li>
-                        </ul>
                     </div>
-                    <div class="col-md-4">
-                        <div class="d-flex align-items-center mb-2">
-                            <span class="badge bg-warning me-2">HR Manager</span>
-                            <small>Manager access</small>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-start border-4 border-secondary">
+                    <div class="card-body">
+                        <h6 class="card-title d-flex align-items-center">
+                            <i class="fas fa-user text-secondary me-2"></i>
+                            HR Staff
+                        </h6>
+                        <div class="small text-muted">
+                            <div class="mb-1"><i class="fas fa-check text-success me-1"></i> Standard access</div>
+                            <div class="mb-1"><i class="fas fa-check text-success me-1"></i> Upload documents</div>
+                            <div class="mb-1"><i class="fas fa-check text-success me-1"></i> Can Add Applicant</div>
+                            <div class="mb-1"><i class="fas fa-check text-success me-1"></i> Basic document management</div>
+                            <div><i class="fas fa-check text-success me-1"></i> Limited access</div>
                         </div>
-                        <ul class="small text-muted">
-                            <li>Manage documents</li>
-                            <li>View all HR pillars</li>
-                            <li>Applicant management</li>
-                            <li>Cannot manage users</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="d-flex align-items-center mb-2">
-                            <span class="badge bg-info me-2">HR Staff</span>
-                            <small>Standard access</small>
-                        </div>
-                        <ul class="small text-muted">
-                            <li>Upload documents</li>
-                            <li>View assigned pillars</li>
-                            <li>Basic document management</li>
-                            <li>Limited access</li>
-                        </ul>
                     </div>
                 </div>
             </div>

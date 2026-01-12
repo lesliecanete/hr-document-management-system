@@ -43,6 +43,17 @@
                                     @enderror
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input type="text" class="form-control" id="phone" name="phone" 
+                                        value="{{ old('phone', $user->phone) }}"
+                                        placeholder="+1 (123) 456-7890">
+                                    @error('phone')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>  
                         </div>
                       
                        

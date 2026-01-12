@@ -42,16 +42,24 @@
                                 <table class="table table-hover mb-0">
                                     <thead class="table-light">
                                         <tr>
+                                            <th>ID</th>
                                             <th>Name</th>
                                             <th>Email</th>
                                             <th>Phone</th>
                                             <th>Status</th>
+                                            <th>Added By</th> 
+                                            <th>Date Added</th>
                                             <th class="text-end">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach($applicants as $applicant)
                                         <tr>
+                                            <td>
+                                                <span class="badge bg-light text-dark border">
+                                                    #{{ str_pad($applicant->id, 5, '0', STR_PAD_LEFT) }}
+                                                </span>
+                                            </td>
                                             <td>
                                                 <strong>{{ $applicant->full_name }}</strong>
                                             </td>
@@ -70,16 +78,37 @@
                                                     {{ ucfirst($applicant->status) }}
                                                 </span>
                                             </td>
+                                            <td>
+                                                @if($applicant->addedByUser)
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="avatar-sm me-2">
+                                                            <div class="avatar-title bg-light text-primary rounded">
+                                                                {{ substr($applicant->addedByUser->name, 0, 1) }}
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <div>{{ $applicant->addedByUser->name }}</div>
+                                                            <small class="text-muted">{{ $applicant->addedByUser->role_display }}</small>
+                                                        </div>
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted">Unknown</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ $applicant->created_at->format('M d, Y') }}</td>
                                             <td class="text-end">
                                                 <div class="btn-group btn-group-sm">
                                                     <a href="{{ route('applicants.show', $applicant) }}" 
                                                        class="btn btn-outline-primary" title="View">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
+                                                    @if(auth()->user()->canEditApplicant($applicant))
                                                     <a href="{{ route('applicants.edit', $applicant) }}" 
                                                        class="btn btn-outline-warning" title="Edit">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
+                                                    @endif
+                                                    @if(auth()->user()->canDeleteApplicant($applicant))
                                                     <form action="{{ route('applicants.destroy', $applicant) }}" 
                                                           method="POST" class="d-inline"
                                                           onsubmit="return confirm('Delete this applicant?')">
@@ -89,6 +118,7 @@
                                                             <i class="fas fa-trash"></i>
                                                         </button>
                                                     </form>
+                                                    @endif
                                                 </div>
                                             </td>
                                         </tr>

@@ -333,13 +333,6 @@
                 <div class="collapse {{ request()->routeIs('users.*') || request()->routeIs('document-types.*') || request()->routeIs('pillars.*') ? 'show' : '' }}" id="settingsSubmenu">
                     <ul class="nav flex-column ms-3">
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" 
-                               href="{{ route('users.index') }}">
-                                <i class="fas fa-users-cog"></i>
-                                <span class="menu-text">Users</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('document-types.*') ? 'active' : '' }}" 
                                href="{{ route('document-types.index') }}">
                                 <i class="fas fa-file-signature"></i>
@@ -351,6 +344,13 @@
                                href="{{ route('pillars.index') }}">
                                 <i class="fas fa-layer-group"></i>
                                 <span class="menu-text">HR Pillars</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" 
+                               href="{{ route('users.index') }}">
+                                <i class="fas fa-users-cog"></i>
+                                <span class="menu-text">Users</span>
                             </a>
                         </li>
                     </ul>

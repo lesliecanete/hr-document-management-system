@@ -24,6 +24,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
+            'phone' => 'nullable|string|max:20', // ✅ Add phone validation
             'password' => 'required|min:8|confirmed',
             'role' => 'required|in:admin,hr_manager,hr_staff',
         ]);
@@ -31,6 +32,7 @@ class UserController extends Controller
         User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'phone' => $request->phone, // ✅ Add phone
             'password' => Hash::make($request->password),
             'role' => $request->role,
         ]);
@@ -48,6 +50,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20', // ✅ Add phone validation
             'role' => 'required|in:admin,hr_manager,hr_staff',
             'is_active' => 'boolean',
         ]);
@@ -55,6 +58,7 @@ class UserController extends Controller
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
+            'phone' => $request->phone,
             'role' => $request->role,
             'is_active' => $request->has('is_active'),
         ]);

@@ -66,6 +66,15 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="phone" class="form-label required-field">Phone</label>
+                                    <input type="phone" class="form-control @error('phone') is-invalid @enderror" 
+                                           id="phone" name="phone" value="{{ old('phone', $user->phone) }}" 
+                                           placeholder="Enter phone number" required>
+                                    @error('phone')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
 
                             <div class="row">

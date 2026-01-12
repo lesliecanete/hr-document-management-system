@@ -97,11 +97,13 @@
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
+                                        <th>ID</th>
                                         <th>Title</th>
                                         <th>Type / Pillar</th>
                                         <th>Applicant</th>
                                         <th>Document Date</th>
                                         <th>Expiry Date</th>
+                                        <th>Uploaded By</th> 
                                         <th>Status</th>
                                         <th class="text-end">Actions</th>
                                     </tr>
@@ -109,6 +111,11 @@
                                 <tbody>
                                     @foreach($documents as $document)
                                     <tr>
+                                        <td>
+                                            <span class="badge bg-light text-dark border">
+                                                #{{ str_pad($document->id, 5, '0', STR_PAD_LEFT) }}
+                                            </span>
+                                        </td>
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 @if($document->file_path)
@@ -156,6 +163,23 @@
                                             @endif
                                         </td>
                                         <td>
+                                            @if($document->uploadedBy)
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-sm me-2">
+                                                        <div class="avatar-title bg-light text-primary rounded">
+                                                                {{ substr($document->uploadedBy->name, 0, 1) }}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <div>{{ $document->uploadedBy->name }}</div>
+                                                        <small class="text-muted">{{ $document->uploadedBy->role_display }}</small>
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <span class="text-muted">Unknown</span>
+                                            @endif
+                                        </td>
+                                        <td>
                                             @if($document->status == 'active')
                                                 <span class="badge bg-success">Active</span>
                                             @elseif($document->status == 'expired')
@@ -178,10 +202,13 @@
                                                         <i class="fas fa-download"></i>
                                                     </a>
                                                 @endif
+                                                @if(auth()->user()->canEditDocument($document))
                                                 <a href="{{ route('documents.edit', $document) }}" class="btn btn-outline-warning" 
                                                    title="Edit">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
+                                                @endif
+                                                @if(auth()->user()->canDeleteDocument($document))
                                                 <form action="{{ route('documents.destroy', $document) }}" method="POST" 
                                                       class="d-inline" onsubmit="return confirm('Delete this document?')">
                                                     @csrf
@@ -190,6 +217,7 @@
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>

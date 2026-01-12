@@ -43,12 +43,12 @@ class ProfileController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            // Remove password validation from here since we have separate password change
+            'phone' => 'nullable|string|max:20', // ✅ Add phone validation
         ]);
 
         $user->name = $request->name;
         $user->email = $request->email;
-
+        $user->phone = $request->phone;
         $user->save();
 
         return redirect()->route('profile.show')
