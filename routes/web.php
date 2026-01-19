@@ -44,20 +44,20 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // =================== APPLICANTS ROUTES ===================
-    Route::prefix('applicants')->name('applicants.')->group(function () {
+    Route::prefix('submitting-parties')->name('submitting-parties.')->group(function () {
         // ✅ ALL ROLES: Can view, create, add applicants
         Route::get('/', [ApplicantController::class, 'index'])->name('index');
         Route::get('/create', [ApplicantController::class, 'create'])->name('create');
         Route::post('/', [ApplicantController::class, 'store'])->name('store');
-        Route::get('/{applicant}', [ApplicantController::class, 'show'])->name('show');
+        Route::get('/{submitting_party}', [ApplicantController::class, 'show'])->name('show');
         
         // ⚠️ EDIT: Admin/HR Manager (all), HR Staff (only their own)
         // Permission checked in controller via $user->canEditApplicant($applicant)
-        Route::get('/{applicant}/edit', [ApplicantController::class, 'edit'])->name('edit');
-        Route::put('/{applicant}', [ApplicantController::class, 'update'])->name('update');
+        Route::get('/{submitting_party}/edit', [ApplicantController::class, 'edit'])->name('edit');
+        Route::put('/{submitting_party}', [ApplicantController::class, 'update'])->name('update');
         
         // ❌ DELETE: Admin & HR Manager ONLY (HR Staff cannot delete)
-        Route::delete('/{applicant}', [ApplicantController::class, 'destroy'])->name('destroy');
+        Route::delete('/{submitting_party}', [ApplicantController::class, 'destroy'])->name('destroy');
     });
 
     // =================== SETTINGS ROUTES ===================

@@ -22,7 +22,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ route('applicants.update', $applicant) }}">
+                    <form method="POST" action="{{ route('submitting-parties.update', $applicant) }}">
                         @csrf
                         @method('PUT')
 
@@ -93,7 +93,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-save me-1"></i> Update Submitting Party
                                 </button>
-                                <a href="{{ route('applicants.index', $applicant) }}" class="btn btn-outline-secondary">
+                                <a href="{{ route('submitting-parties.index', $applicant) }}" class="btn btn-outline-secondary">
                                     <i class="fas fa-times me-1"></i> Cancel
                                 </a>
                             </div>

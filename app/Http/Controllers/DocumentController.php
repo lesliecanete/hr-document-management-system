@@ -102,7 +102,7 @@ class DocumentController extends Controller
             'new_last_name' => 'nullable|string|max:255',
             'new_email' => 'nullable|email|max:255|unique:applicants,email',
             'new_phone' => 'nullable|string|max:20',
-            'new_applied_position' => 'nullable|string|max:255',
+            'new_position' => 'nullable|string|max:255',
             'document_date' => 'required|date|before_or_equal:today',
             'document_file' => [
                 'required',
@@ -146,7 +146,7 @@ class DocumentController extends Controller
                     'last_name' => $validated['new_last_name'],
                     'email' => $validated['new_email'],
                     'phone' => $validated['new_phone'] ?? null,
-                    'applied_position' => $validated['new_applied_position'] ?? null,
+                    'position' => $validated['new_position'] ?? null,
                     'status' => 'active',
                     'user_id' => auth()->id(),
                 ]);

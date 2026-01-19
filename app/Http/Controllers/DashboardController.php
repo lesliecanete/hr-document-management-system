@@ -16,10 +16,17 @@ class DashboardController extends Controller
         // Debug: Log what's happening
         Log::info('Dashboard accessed', ['user_id' => auth()->id()]);
 
+        // Count documents expiring in next 3 months (90 days)
+        $expiringSoonCount = Document::where('status', 'active')
+            ->whereNotNull('expiry_date')
+            ->where('expiry_date', '>', Carbon::now()) // Not expired yet
+            ->where('expiry_date', '<=', Carbon::now()->addDays(90)) // Within next 90 days (3 months)
+            ->count();
+
         $stats = [
             'total_documents' => Document::count(),
             'active_documents' => Document::where('status', 'active')->count(),
-            'expiring_soon' => Document::where('status', 'expiring_soon')->count(),
+            'expiring_soon' => $expiringSoonCount, // Updated to 3 months
             'total_applicants' => Applicant::where('status', 'active')->count(),
         ];
 
@@ -34,6 +41,7 @@ class DashboardController extends Controller
             $documentCount = DB::table('documents')
                 ->join('document_types', 'documents.document_type_id', '=', 'document_types.id')
                 ->where('document_types.pillar_id', $pillar->id)
+                ->where('documents.status', 'active') // Only count active documents
                 ->count();
                 
             $pillar->documents_count = $documentCount;
@@ -45,15 +53,19 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
-        $expiringDocuments = Document::where('expiry_date', '<=', Carbon::now()->addDays(30))
-            ->where('status', '!=', 'archived')
+        // Get documents expiring in next 3 months
+        $expiringDocuments = Document::where('status', 'active')
+            ->whereNotNull('expiry_date')
+            ->where('expiry_date', '>', Carbon::now()) // Not expired yet
+            ->where('expiry_date', '<=', Carbon::now()->addDays(90)) // Within next 90 days (3 months)
             ->with(['documentType', 'applicant'])
-            ->orderBy('expiry_date')
-            ->take(5)
+            ->orderBy('expiry_date', 'asc') // Soonest first
+            ->take(10) // Show more since we have 3 months worth
             ->get();
 
         // Debug: Log final data
         Log::info('Final pillars data:', ['pillars_count' => $pillars->count()]);
+        Log::info('Expiring documents count:', ['count' => $expiringDocuments->count()]);
 
         return view('dashboard', compact('stats', 'pillars', 'recentDocuments', 'expiringDocuments'));
     }

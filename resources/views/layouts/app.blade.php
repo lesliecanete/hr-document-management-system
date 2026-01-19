@@ -16,13 +16,33 @@
             flex-direction: column;
             min-height: 100vh;
             overflow-x: hidden;
+            /* Background with school/office image */
+            background-image: url('{{ asset("images/DO-Tagbilaran-City.png") }}');
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            position: relative;
         }
         
+        /* Semi-transparent overlay for better readability */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.88);
+            z-index: -1;
+        }
+        
+        /* Sidebar with DepEd blue theme */
         .sidebar {
             min-height: 100vh;
-            background: #2c3e50;
+            background: linear-gradient(135deg, #1F4E79 0%, #2c6ba8 100%);
             transition: all 0.3s;
-            box-shadow: 3px 0 10px rgba(0,0,0,0.1);
+            box-shadow: 3px 0 10px rgba(0,0,0,0.2);
             width: 250px;
             position: fixed;
             left: 0;
@@ -36,54 +56,57 @@
         }
         
         .sidebar .nav-link {
-            color: #ecf0f1;
-            padding: 12px 15px;
+            color: rgba(255, 255, 255, 0.9);
+            padding: 14px 15px;
             border-left: 3px solid transparent;
             transition: all 0.3s;
             white-space: nowrap;
             overflow: hidden;
             display: flex;
             align-items: flex-start;
+            font-weight: 500;
         }
         
         .sidebar .nav-link:hover {
-            background: #34495e;
-            color: #3498db;
-            border-left: 3px solid #3498db;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-left: 3px solid #ffffff;
         }
         
         .sidebar .nav-link.active {
-            background: #34495e;
-            color: #3498db;
-            border-left: 3px solid #3498db;
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border-left: 3px solid #ce1126;
         }
         
         .sidebar .nav-link i {
-            width: 20px;
+            width: 22px;
             margin-right: 15px;
             text-align: center;
             flex-shrink: 0;
             margin-top: 2px;
+            font-size: 1.1rem;
         }
         
         .sidebar.collapsed .nav-link i {
             margin-right: 0;
         }
-        .sidebar .nav-link.dropdown-toggle::after{
+        
+        .sidebar .nav-link.dropdown-toggle::after {
             margin-top: .5em;
             margin-left: .5em;
+            border-top-color: rgba(255, 255, 255, 0.7);
         }
         
         .sidebar-header {
             padding: 20px 15px;
-            background: #34495e;
-            border-bottom: 1px solid #4a6278;
+            background: rgba(0, 0, 0, 0.2);
             white-space: nowrap;
             overflow: hidden;
         }
         
         .sidebar-header .logo {
-            color: #ecf0f1;
+            color: #ffffff;
             text-decoration: none;
             font-weight: 600;
             font-size: 1.1rem;
@@ -96,7 +119,7 @@
             display: none;
         }
         
-        .sidebar.collapsed .sidebar-header .logo img{
+        .sidebar.collapsed .sidebar-header .logo img {
             height: 27px !important;
         }
         
@@ -116,12 +139,32 @@
             display: none;
         }
         
+        /* Submenu styles */
+        .sidebar .nav .nav {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            margin: 5px 10px;
+        }
+        
+        .sidebar .nav .nav .nav-link {
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            border-left: 2px solid transparent;
+        }
+        
+        .sidebar .nav .nav .nav-link:hover {
+            border-left: 2px solid #ffffff;
+        }
+        
+        .sidebar .nav .nav .nav-link.active {
+            border-left: 2px solid #ce1126;
+        }
+        
         .main-content {
             display: flex;
             flex-direction: column;
             min-height: 100vh;
             transition: all 0.3s;
-            background: #f8f9fa;
             margin-left: 250px;
             width: calc(100% - 250px);
         }
@@ -132,13 +175,13 @@
         }
         
         .navbar-top {
-            background: #fff;
-            border-bottom: 1px solid #dee2e6;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             height: 70px;
             position: sticky;
             top: 0;
             z-index: 1050;
+            backdrop-filter: blur(5px);
         }
         
         .navbar-top .dropdown {
@@ -153,7 +196,7 @@
         .toggle-btn {
             border: none;
             background: none;
-            color: #2c3e50;
+            color: #1F4E79;
             font-size: 1.2rem;
             padding: 5px 10px;
             cursor: pointer;
@@ -161,8 +204,8 @@
         
         .content-wrapper {
             flex: 1 0 auto;
-            padding: 20px;
-            min-height: calc(100vh - 140px);
+            padding: 25px;
+            min-height: calc(100vh - 180px);
         }
         
         .sidebar.collapsed .dropdown-toggle::after {
@@ -188,21 +231,64 @@
             display: block;
         }
         
-        /* Footer Styles */
+        /* Updated Footer Styles - Matching Login Page */
         .footer {
-            background: #ffffff;
-            border-top: 1px solid #dee2e6;
-            padding: 15px 0;
+            background: rgba(31, 78, 121, 0.95);
+            color: white;
+            padding: 25px 0;
             margin-top: auto;
             width: 100%;
             z-index: 100;
+            backdrop-filter: blur(5px);
         }
         
-        .footer .container-fluid {
-            max-width: 100%;
+        .footer-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
         }
         
-    
+        .footer-logos img {
+            height: 45px;
+            width: auto;
+            filter: brightness(0) invert(1);
+        }
+        
+        .study-title {
+            font-style: italic;
+            font-size: 0.9rem;
+            margin: 10px 0;
+            color: rgba(255, 255, 255, 0.9);
+            text-align: center;
+        }
+        
+        .copyright {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+        }
+        
+        /* Card styling */
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .card-header {
+            font-weight: 600;
+        }
+        .card-header:not(.bg-warning):not(.bg-success):not(.bg-danger):not(.bg-info):not(.bg-primary):not(.bg-secondary):not(.bg-dark):not(.bg-light) {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e3efff 100%);
+            border-bottom: 1px solid #d0e3ff;
+            font-weight: 600;
+            color: #1F4E79;
+        }
+        
         /* Mobile styles */
         @media (max-width: 768px) {
             .sidebar {
@@ -244,26 +330,32 @@
             
             .content-wrapper {
                 min-height: calc(100vh - 160px);
+                padding: 15px;
             }
             
             .footer {
                 position: relative;
                 width: 100%;
+                padding: 20px 0;
+            }
+            
+            .footer-logos {
+                gap: 20px;
+            }
+            
+            .footer-logos img {
+                height: 35px;
             }
         }
         
         @media (max-width: 576px) {
-            .footer .d-flex {
-                flex-direction: column !important;
-                text-align: center !important;
+            .footer-logos {
+                flex-direction: column;
+                gap: 15px;
             }
             
-            .footer .mb-2 {
-                margin-bottom: 10px !important;
-            }
-            
-            .footer img {
-                margin: 0 auto !important;
+            .study-title {
+                font-size: 0.8rem;
             }
         }
     </style>
@@ -276,7 +368,7 @@
         <div class="sidebar-header">
             <a href="/" class="logo">
                 <img src="{{ asset('images/depedtagbilaran-logo.jpg') }}" alt="DEPED Logo" 
-                class="me-2" style="height: 40px; width: auto;">
+                class="me-2" style="height: 40px; width: auto; border-radius: 4px;">
                 <span class="menu-text">HR Document Management</span>
             </a>
         </div>
@@ -292,64 +384,61 @@
             <!-- Documents Dropdown -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle {{ request()->routeIs('documents.*') ? 'active' : '' }}" 
-                   href="#" data-bs-toggle="collapse" data-bs-target="#documentsSubmenu">
+                href="#" data-bs-toggle="collapse" data-bs-target="#documentsSubmenu">
                     <i class="fas fa-file-alt"></i>
                     <span class="menu-text">Documents</span>
                 </a>
-                <div class="collapse {{ request()->routeIs('documents.*') ? 'show' : '' }}" id="documentsSubmenu">
+                <div class="collapse show" id="documentsSubmenu">
                     <ul class="nav flex-column ms-3">
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('documents.create') ? 'active' : '' }}" 
-                               href="{{ route('documents.create') }}">
+                            href="{{ route('documents.create') }}">
                                 <i class="fas fa-upload"></i>
                                 <span class="menu-text">Upload Document</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('documents.index') ? 'active' : '' }}" 
-                               href="{{ route('documents.index') }}">
+                            href="{{ route('documents.index') }}">
                                 <i class="fas fa-search"></i>
                                 <span class="menu-text">Search Document</span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('submitting-parties.*') ? 'active' : '' }}" href="{{ route('submitting-parties.index') }}">
+                                <i class="fas fa-user-tie"></i>
+                                <span class="menu-text">Submitting Parties</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
-            </li>
-
-            <!-- Applicants -->
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('applicants.*') ? 'active' : '' }}" href="{{ route('applicants.index') }}">
-                    <i class="fas fa-user-tie"></i>
-                    <span class="menu-text">Applicants</span>
-                </a>
-            </li>
-
+            </li>           
             <!-- Settings Dropdown -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle {{ request()->routeIs('users.*') || request()->routeIs('document-types.*') || request()->routeIs('pillars.*') ? 'active' : '' }}" 
-                   href="#" data-bs-toggle="collapse" data-bs-target="#settingsSubmenu">
+                href="#" data-bs-toggle="collapse" data-bs-target="#settingsSubmenu">
                     <i class="fas fa-cog"></i>
                     <span class="menu-text">Settings</span>
                 </a>
-                <div class="collapse {{ request()->routeIs('users.*') || request()->routeIs('document-types.*') || request()->routeIs('pillars.*') ? 'show' : '' }}" id="settingsSubmenu">
+                <div class="collapse show" id="settingsSubmenu">
                     <ul class="nav flex-column ms-3">
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('document-types.*') ? 'active' : '' }}" 
-                               href="{{ route('document-types.index') }}">
+                            href="{{ route('document-types.index') }}">
                                 <i class="fas fa-file-signature"></i>
                                 <span class="menu-text">Document Types</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('pillars.*') ? 'active' : '' }}" 
-                               href="{{ route('pillars.index') }}">
+                            href="{{ route('pillars.index') }}">
                                 <i class="fas fa-layer-group"></i>
                                 <span class="menu-text">HR Pillars</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" 
-                               href="{{ route('users.index') }}">
+                            href="{{ route('users.index') }}">
                                 <i class="fas fa-users-cog"></i>
                                 <span class="menu-text">Users</span>
                             </a>
@@ -369,8 +458,8 @@
                     <i class="fas fa-bars"></i> 
                 </button>
                 <div class="text-center flex-grow-1">
-                    <h4 class="mb-0">HR Document Management System</h4>
-                    <p class="mb-0">Division of Tagbilaran</p>
+                    <h4 class="mb-0" style="color: #1F4E79;">HR Document Management System</h4>
+                    <p class="mb-0 text-muted">Division of Tagbilaran City</p>
                 </div>
                 <div class="d-flex align-items-center">
                     @auth
@@ -410,31 +499,23 @@
             @yield('content')
         </div>
         
-        <!-- Footer -->
+        <!-- Updated Footer -->
         <footer class="footer">
-            <div class="container-fluid px-4">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
-                    <!-- Left: DepEd Logo -->
-                    <div class="mb-2 mb-md-0">
-                        <div class="d-flex align-items-center">
-                            <img src="{{ asset('images/deped-logo.png') }}" alt="DepEd Logo" height="45" class="me-2">
-                        </div>
-                    </div>
-                    
-                    <!-- Center: Copyright -->
-                    <div class="mb-2 mb-md-0 text-center">
-                        <p class="mb-0 text-muted small">
-                            &copy; 2025 HR Document Management System
-                        </p>
-                        <p class="mb-0 text-muted small">Division of Tagbilaran City</p>
-                    </div>
-                    
-                    <!-- Right: Bagong Pilipinas -->
-                    <div>
-                        <div class="d-flex align-items-center">
-                            <img src="{{ asset('images/bagongpilipinas-logo.png') }}" alt="Bagong Pilipinas" height="45" class="me-2">
-                        </div>
-                    </div>
+            <div class="container">
+                <!-- Study Title -->
+                <div class="study-title mb-3">
+                    "A Web-Based Electronic Database Management System for HR Department in the Division of Tagbilaran City"
+                </div>
+                
+                <!-- Logos -->
+                <div class="footer-logos">
+                    <img src="{{ asset('images/deped-logo.png') }}" alt="DepEd Logo">
+                    <img src="{{ asset('images/bagongpilipinas-logo.png') }}" alt="Bagong Pilipinas Logo">
+                </div>
+                
+                <!-- Copyright -->
+                <div class="copyright">
+                    &copy; 2025 HR Document Management System | Division of Tagbilaran City
                 </div>
             </div>
         </footer>
@@ -506,6 +587,14 @@
             if (window.innerWidth <= 768 && !sidebar.classList.contains('collapsed')) {
                 collapseSidebar();
             }
+            
+            // Add active class to parent when submenu item is active
+            document.querySelectorAll('.sidebar .nav .nav .nav-link.active').forEach(item => {
+                const parent = item.closest('.collapse').previousElementSibling;
+                if (parent) {
+                    parent.classList.add('active');
+                }
+            });
         });
     </script>
     

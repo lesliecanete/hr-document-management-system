@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('last_name');
             $table->string('email')->unique();
             $table->string('phone')->nullable();
-            $table->string('applied_position');
+            $table->string('position');
             $table->date('application_date');
             $table->enum('status', ['active', 'hired', 'rejected', 'withdrawn'])->default('active');
             $table->timestamps();

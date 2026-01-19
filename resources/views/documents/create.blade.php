@@ -56,20 +56,20 @@
 
                             <!-- ========== APPLICANT TAB SECTION ========== -->
                             <div class="mb-4">
-                                <label class="form-label">Applicant *</label>
+                                <label class="form-label">Submitting Party *</label>
                                 
                                 <!-- Applicant Selection Tabs -->
                                 <ul class="nav nav-tabs mb-3" id="applicantTab" role="tablist">
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link active" id="select-applicant-tab" data-bs-toggle="tab" 
                                                 data-bs-target="#select-applicant-pane" type="button" role="tab">
-                                            <i class="fas fa-search me-1"></i> Select Existing Applicant
+                                            <i class="fas fa-search me-1"></i> Select Existing Submitting Party
                                         </button>
                                     </li>
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link" id="create-applicant-tab" data-bs-toggle="tab" 
                                                 data-bs-target="#create-applicant-pane" type="button" role="tab">
-                                            <i class="fas fa-user-plus me-1"></i> Create New Applicant
+                                            <i class="fas fa-user-plus me-1"></i> Create New Submitting Party
                                         </button>
                                     </li>
                                 </ul>
@@ -112,8 +112,8 @@
                                                                 @if($applicant->phone)
                                                                 <br><i class="fas fa-phone me-1"></i>{{ $applicant->phone }}
                                                                 @endif
-                                                                @if($applicant->applied_position)
-                                                                <br><i class="fas fa-briefcase me-1"></i>{{ $applicant->applied_position }}
+                                                                @if($applicant->position)
+                                                                <br><i class="fas fa-briefcase me-1"></i>{{ $applicant->position }}
                                                                 @endif
                                                             </div>
                                                         </div>
@@ -128,7 +128,7 @@
                                         
                                         <div id="noResults" class="alert alert-info mt-3 d-none">
                                             <i class="fas fa-info-circle me-2"></i>
-                                            No applicants found. Try a different search or create a new applicant.
+                                            No Submitting Party found. Try a different search or create a new Submitting Party.
                                         </div>
                                         
                                         <div id="selectedApplicantInfo" class="alert alert-success mt-3 d-none">
@@ -141,7 +141,7 @@
                                     <div class="tab-pane fade" id="create-applicant-pane" role="tabpanel">
                                         <div class="alert alert-info mb-3">
                                             <i class="fas fa-info-circle me-2"></i>
-                                            New applicant will be created and automatically selected for this document.
+                                            New Submitting Party will be created and automatically selected for this document.
                                         </div>
                                         
                                         <div class="row">
@@ -168,6 +168,17 @@
                                         </div>
                                         
                                         <div class="row">
+                                             <div class="col-md-6 mb-3">
+                                                <label for="new_position" class="form-label">Position</label>
+                                                <input type="text" class="form-control @error('new_position') is-invalid @enderror" 
+                                                    id="new_position" 
+                                                    name="new_position"
+                                                    value="{{ old('new_position') }}"
+                                                    placeholder="e.g., Teacher I, Administrative Officer">
+                                                @error('new_position')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
                                             <div class="col-md-6 mb-3">
                                                 <label for="new_email" class="form-label">Email *</label>
                                                 <input type="email" class="form-control @error('new_email') is-invalid @enderror" 
@@ -352,7 +363,7 @@
                     documentTypeHelp.textContent = '⚠️ This document type requires an applicant association';
                     documentTypeHelp.className = 'form-text text-warning';
                 } else {
-                    documentTypeHelp.textContent = 'Applicant association is optional for this document type';
+                    documentTypeHelp.textContent = 'Submitted by association is optional for this document type';
                     documentTypeHelp.className = 'form-text text-muted';
                 }
             });

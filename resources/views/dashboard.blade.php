@@ -59,15 +59,29 @@
         </div>
         
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card bg-warning text-white">
+             <!-- Color based on severity -->
+            @php
+                $expiringCount = $stats['expiring_soon'];
+                $cardColor = 'bg-warning'; // Default warning (yellow)
+                $icon = 'fas fa-exclamation-triangle';
+                
+                if ($expiringCount == 0) {
+                    $cardColor = 'bg-success'; // Green if none
+                    $icon = 'fas fa-check-circle';
+                } elseif ($expiringCount > 10) {
+                    $cardColor = 'bg-danger'; // Red if many
+                    $icon = 'fas fa-exclamation-circle';
+                }
+            @endphp
+            <div class="card {{ $cardColor }} text-white">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <div class="text-sm font-weight-bold text-uppercase mb-1">Expiring Soon</div>
-                            <div class="h4 mb-0">{{ $stats['expiring_soon'] }}</div>
+                            <div class="text-sm font-weight-bold text-uppercase mb-1">Expiring in 90 days</div>
+                            <div class="h4 mb-0">{{ $expiringCount }}</div>
                         </div>
                         <div class="col-auto">
-                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                            <i class="{{ $icon }} fa-2x"></i>
                         </div>
                     </div>
                 </div>
@@ -79,7 +93,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <div class="text-sm font-weight-bold text-uppercase mb-1">Total Applicants</div>
+                            <div class="text-sm font-weight-bold text-uppercase mb-1">Total Submitting Parties</div>
                             <div class="h4 mb-0">{{ $stats['total_applicants'] }}</div>
                         </div>
                         <div class="col-auto">
@@ -109,7 +123,7 @@
                                         <p class="card-text text-muted small">{{ $pillar->description ?? 'No description' }}</p>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="h5 mb-0">{{ $pillar->documents_count ?? 0 }}</span>
-                                            <a href="{{ route('documents.index', ['pillar' => $pillar->slug]) }}" 
+                                            <a href="{{ route('documents.index', ['pillar' => $pillar->name]) }}" 
                                                class="btn btn-sm btn-outline-primary">View Documents</a>
                                         </div>
                                     </div>
@@ -164,39 +178,70 @@
         <div class="col-lg-6 mb-4">
             <div class="card border-warning">
                 <div class="card-header bg-warning text-white">
-                    <h5 class="card-title mb-0">Documents Expiring Soon</h5>
+                    <h5 class="card-title mb-0">Documents Expiring in Next 90 Days</h5>
                 </div>
                 <div class="card-body">
                     @if($expiringDocuments->count() > 0)
                         <div class="list-group list-group-flush">
                             @foreach($expiringDocuments as $document)
-                            <a href="{{ route('documents.show', $document->id) }}" class="list-group-item list-group-item-action">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h6 class="mb-1">{{ $document->title }}</h6>
-                                    <small class="text-danger">
-                                        Expires: {{ $document->expiry_date->format('M d, Y') }}
-                                    </small>
-                                </div>
-                                <p class="mb-1 text-muted small">
-                                    @if($document->documentType)
-                                        {{ $document->documentType->name }} 
-                                    @endif
-                                    @if($document->applicant)
-                                        • {{ $document->applicant->full_name }}
-                                    @endif
-                                </p>
-                            </a>
+                                @php
+                                    $daysUntilExpiry = \Carbon\Carbon::parse($document->expiry_date)->diffInDays(\Carbon\Carbon::now(), false) * -1;
+                                    $expiryClass = '';
+                                    
+                                    if ($daysUntilExpiry <= 30) {
+                                        $expiryClass = 'list-group-item-danger'; // Red for critical (30 days or less)
+                                    } elseif ($daysUntilExpiry <= 60) {
+                                        $expiryClass = 'list-group-item-warning'; // Yellow for warning (31-60 days)
+                                    } else {
+                                        $expiryClass = 'list-group-item-info'; // Blue for info (61-90 days)
+                                    }
+                                @endphp
+                                
+                                <a href="{{ route('documents.show', $document->id) }}" 
+                                class="list-group-item list-group-item-action {{ $expiryClass }}">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ $document->title }}</h6>
+                                        <small>
+                                            @if($daysUntilExpiry <= 0)
+                                                <strong class="text-danger">EXPIRED</strong>
+                                            @else
+                                                Expires in {{ $daysUntilExpiry }} days
+                                            @endif
+                                        </small>
+                                    </div>
+                                    <p class="mb-1 text-muted small">
+                                        @if($document->documentType)
+                                            {{ $document->documentType->name }} 
+                                        @endif
+                                        @if($document->applicant)
+                                            • {{ $document->applicant->full_name }}
+                                        @endif
+                                        <br>
+                                        Expiry Date: {{ \Carbon\Carbon::parse($document->expiry_date)->format('M d, Y') }}
+                                    </p>
+                                </a>
                             @endforeach
                         </div>
                         
-                        <form action="{{ route('documents.archive') }}" method="POST" class="mt-3">
-                            @csrf
-                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                <i class="fas fa-archive"></i> Archive All Expired Documents
-                            </button>
-                        </form>
+                        <!-- Optional: Add legend for color coding -->
+                        <div class="mt-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="me-3">
+                                    <span class="badge bg-danger me-1">●</span>
+                                    <small>Critical (≤ 30 days)</small>
+                                </div>
+                                <div class="me-3">
+                                    <span class="badge bg-warning me-1">●</span>
+                                    <small>Warning (31-60 days)</small>
+                                </div>
+                                <div>
+                                    <span class="badge bg-info me-1">●</span>
+                                    <small>Info (61-90 days)</small>
+                                </div>
+                            </div>
+                        </div>
                     @else
-                        <p class="text-muted">No documents expiring soon.</p>
+                        <p class="text-muted">No documents expiring in the next 90 days.</p>
                     @endif
                 </div>
             </div>
@@ -223,8 +268,8 @@
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{{ route('applicants.index') }}" class="btn btn-info w-100">
-                                <i class="fas fa-user-tie"></i> Manage Applicants
+                            <a href="{{ route('submitting-parties.index') }}" class="btn btn-info w-100">
+                                <i class="fas fa-user-tie"></i> Manage Submitting Parties
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">

@@ -13,7 +13,7 @@
                         </h4>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="{{ route('applicants.store') }}">
+                        <form method="POST" action="{{ route('submitting-parties.store') }}">
                             @csrf
 
                             <div class="row">
@@ -68,7 +68,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-save"></i> Add Submitting Party
                                 </button>
-                                <a href="{{ route('applicants.index') }}" class="btn btn-secondary">
+                                <a href="{{ route('submitting-parties.index') }}" class="btn btn-secondary">
                                     <i class="fas fa-times"></i> Cancel
                                 </a>
                             </div>

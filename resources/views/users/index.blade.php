@@ -154,7 +154,7 @@
                     <div class="card-body">
                         <h6 class="card-title d-flex align-items-center">
                             <i class="fas fa-user-tie text-warning me-2"></i>
-                            HR Manager
+                            HR Officer
                         </h6>
                         <div class="small text-muted">
                             <div class="mb-1"><i class="fas fa-check text-success me-1"></i> Manager access</div>
@@ -179,7 +179,7 @@
                             <div class="mb-1"><i class="fas fa-check text-success me-1"></i> Upload documents</div>
                             <div class="mb-1"><i class="fas fa-check text-success me-1"></i> Can Add Applicant</div>
                             <div class="mb-1"><i class="fas fa-check text-success me-1"></i> Basic document management</div>
-                            <div><i class="fas fa-check text-success me-1"></i> Limited access</div>
+                            <div><i class="fas fa-times text-danger me-1"></i> Settings Management</div>
                         </div>
                     </div>
                 </div>

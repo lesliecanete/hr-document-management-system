@@ -110,12 +110,12 @@
                         <!-- Applicant Information Section - ADDED HERE -->
                         @if($document->applicant)
                         <div class="mt-4">
-                            <h6>Applicant Information</h6>
+                            <h6>Submitting Party Information</h6>
                             <table class="table table-bordered">
                                 <tr>
-                                    <th width="30%">Applicant Name:</th>
+                                    <th width="30%">Submitting Party Name:</th>
                                     <td>
-                                        <a href="{{ route('applicants.show', $document->applicant->id) }}">
+                                        <a href="{{ route('submitting-parties.show', $document->applicant->id) }}">
                                             {{ $document->applicant->full_name }}
                                         </a>
                                     </td>
@@ -127,6 +127,10 @@
                                 <tr>
                                     <th>Phone:</th>
                                     <td>{{ $document->applicant->phone ?? 'N/A' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Position:</th>
+                                    <td>{{ $document->applicant->position  ?? 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Status:</th>

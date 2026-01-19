@@ -41,7 +41,7 @@
                         <div class="col-md-4">
                             <label for="search" class="form-label">Search</label>
                             <input type="text" class="form-control" id="search" name="search" 
-                                   value="{{ request('search') }}" placeholder="Title, description, applicant...">
+                                   value="{{ request('search') }}" placeholder="Title, description, submitting party...">
                         </div>
                         <div class="col-md-3">
                             <label for="pillar" class="form-label">HR Pillar</label>
@@ -99,8 +99,8 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Title</th>
-                                        <th>Type / Pillar</th>
-                                        <th>Applicant</th>
+                                        <th>Pillar</th>
+                                        <th>Submitting Party</th>
                                         <th>Document Date</th>
                                         <th>Expiry Date</th>
                                         <th>Uploaded By</th> 
@@ -143,7 +143,7 @@
                                         </td>
                                         <td>
                                             @if($document->applicant)
-                                                <a href="{{ route('applicants.show', $document->applicant) }}" class="text-primary">
+                                                <a href="{{ route('submitting-parties.show', $document->applicant) }}" class="text-primary">
                                                     {{ $document->applicant->full_name ?? $document->applicant->first_name }}
                                                 </a>
                                             @else

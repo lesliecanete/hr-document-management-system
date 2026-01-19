@@ -58,7 +58,7 @@
                             <!-- Display current applicant as read-only -->
                             @if($document->applicant_id && $document->applicant)
                                 <div class="mb-3">
-                                    <label class="form-label">Associated Applicant</label>
+                                    <label class="form-label">Submitting Party </label>
                                     <div class="card">
                                         <div class="card-body py-3">
                                             <div class="d-flex align-items-center">
@@ -72,8 +72,8 @@
                                                         @if($document->applicant->phone)
                                                             <br><i class="fas fa-phone me-1"></i>{{ $document->applicant->phone }}
                                                         @endif
-                                                        @if($document->applicant->applied_position)
-                                                            <br><i class="fas fa-briefcase me-1"></i>{{ $document->applicant->applied_position }}
+                                                        @if($document->applicant->position)
+                                                            <br><i class="fas fa-briefcase me-1"></i>{{ $document->applicant->position }}
                                                         @endif
                                                     </div>
                                                 </div>
@@ -82,17 +82,17 @@
                                         </div>
                                     </div>
                                     <div class="form-text mt-2">
-                                        <i class="fas fa-info-circle"></i> Applicant association cannot be changed.
+                                        <i class="fas fa-info-circle"></i> Submitting Party cannot be changed.
                                     </div>
                                     <!-- Hidden input to preserve applicant_id -->
                                     <input type="hidden" name="applicant_id" value="{{ $document->applicant_id }}">
                                 </div>
                             @else
                                 <div class="mb-3">
-                                    <label class="form-label">Applicant Association</label>
+                                    <label class="form-label">Submitting Party</label>
                                     <div class="alert alert-info">
                                         <i class="fas fa-info-circle me-2"></i>
-                                        This document is not associated with any applicant.
+                                        This document is not associated with any Submitting Party.
                                     </div>
                                     <!-- Hidden input with empty value -->
                                     <input type="hidden" name="applicant_id" value="">

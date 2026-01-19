@@ -14,6 +14,7 @@ class Applicant extends Model
         'last_name',
         'email',
         'phone',
+        'position',  //just position
         'status',
         'user_id', // ✅ Make sure this exists
 

@@ -15,11 +15,11 @@
                 </div>
                 <div class="btn-group">
                     @if(auth()->user()->canEditApplicant($applicant))
-                    <a href="{{ route('applicants.edit', $applicant) }}" class="btn btn-warning">
+                    <a href="{{ route('submitting-parties.edit', $applicant) }}" class="btn btn-warning">
                         <i class="fas fa-edit me-1"></i> Edit
                     </a>
                     @endif
-                    <a href="{{ route('applicants.index') }}" class="btn btn-outline-secondary">
+                    <a href="{{ route('submitting-parties.index') }}" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left me-1"></i> Back to List
                     </a>
                 </div>
