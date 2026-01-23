@@ -75,7 +75,6 @@
     {{-- Full version for detail views --}}
     <div>
         <div class="d-flex flex-wrap gap-1 align-items-center">
-            {{$document->status }}
             @if($isPermanent)
                 <span class="badge bg-primary">
                     <i class="fas fa-infinity me-1"></i> Permanent
