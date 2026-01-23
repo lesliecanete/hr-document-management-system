@@ -52,43 +52,54 @@ class Document extends Model
 
     public function updateStatus()
     {
+        // First check: If document type has retention_years = 0 (permanent)
+        if ($this->documentType && $this->documentType->retention_years == 0) {
+            // Permanent documents should never be archived or expired
+            $this->status = 'active';
+            $this->expiry_date = null; // No expiry date for permanent documents
+            $this->save();
+            return;
+        }
+        
+        // Second check: If no expiry date (shouldn't happen for non-permanent, but just in case)
+        if (!$this->expiry_date) {
+            $this->status = 'active';
+            $this->save();
+            return;
+        }
+        
         $today = Carbon::today();
         $expiryDate = Carbon::parse($this->expiry_date);
-
-        if ($expiryDate->lessThanOrEqualTo($today)) {
-            $this->status = 'archived';
-        } elseif ($expiryDate->diffInDays($today) <= 30) {
+        
+        // Calculate days until expiry (positive if future, negative if past)
+        $daysUntilExpiry = $today->diffInDays($expiryDate, false);
+        
+        if ($daysUntilExpiry < 0) {
+            // Already expired
+            $this->status = 'expired';
+        } elseif ($daysUntilExpiry <= 90) {
+            // Within 90 days - should be expiring_soon
             $this->status = 'expiring_soon';
         } else {
+            // More than 90 days away
             $this->status = 'active';
         }
-
+        
         $this->save();
     }
 
     public function isExpiringSoon()
     {
-        return Carbon::parse($this->expiry_date)->diffInDays(Carbon::today()) <= 30;
-    }
-      // Get file name from document_file path
-    public function getFileNameAttribute()
-    {
-        // First priority: file_name field (your actual storage)
-        if (isset($this->attributes['file_name']) && $this->attributes['file_name']) {
-            return $this->attributes['file_name'];
+        $today = Carbon::today();
+        $expiryDate = Carbon::parse($this->expiry_date);
+        
+        // If already expired, return false
+        if ($expiryDate->lessThanOrEqualTo($today)) {
+            return false;
         }
         
-        // Second priority: extract from file_path
-        if (isset($this->attributes['file_path']) && $this->attributes['file_path']) {
-            return basename($this->attributes['file_path']);
-        }
-        
-        // Third priority: document_file (if used in future)
-        if ($this->document_file) {
-            return basename($this->document_file);
-        }
-        
-        return 'Unknown';
+        // Calculate days FROM today TO expiry
+        return $today->diffInDays($expiryDate) <= 90; // FIXED: today->diffInDays(expiry)
     }
     // Check if document has any file attached
     public function getHasFileAttribute()

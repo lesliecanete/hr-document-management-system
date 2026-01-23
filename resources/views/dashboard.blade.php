@@ -183,7 +183,7 @@
                 <div class="card-body">
                     @if($expiringDocuments->count() > 0)
                         <div class="list-group list-group-flush">
-                            @foreach($expiringDocuments as $document)
+                           @foreach($expiringDocuments as $document)
                                 @php
                                     $daysUntilExpiry = \Carbon\Carbon::parse($document->expiry_date)->diffInDays(\Carbon\Carbon::now(), false) * -1;
                                     $expiryClass = '';
@@ -199,26 +199,33 @@
                                 
                                 <a href="{{ route('documents.show', $document->id) }}" 
                                 class="list-group-item list-group-item-action {{ $expiryClass }}">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <h6 class="mb-1">{{ $document->title }}</h6>
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <div class="flex-grow-1 me-2">
+                                            <h6 class="mb-1">{{ $document->title }}</h6>
+                                            <p class="mb-0 text-muted small">
+                                                @if($document->documentType)
+                                                    {{ $document->documentType->name }} 
+                                                @endif
+                                                @if($document->applicant)
+                                                    • {{ $document->applicant->full_name }}
+                                                @endif
+                                            </p>
+                                        </div>
+                                        <div class="text-end">
+                                            <small class="d-block mt-1">
+                                               Expiry Date :  {{ \Carbon\Carbon::parse($document->expiry_date)->format('M d, Y') }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="mt-1">
                                         <small>
                                             @if($daysUntilExpiry <= 0)
                                                 <strong class="text-danger">EXPIRED</strong>
                                             @else
-                                                Expires in {{ $daysUntilExpiry }} days
+                                                Expires in {{ (int) $daysUntilExpiry }} days
                                             @endif
                                         </small>
                                     </div>
-                                    <p class="mb-1 text-muted small">
-                                        @if($document->documentType)
-                                            {{ $document->documentType->name }} 
-                                        @endif
-                                        @if($document->applicant)
-                                            • {{ $document->applicant->full_name }}
-                                        @endif
-                                        <br>
-                                        Expiry Date: {{ \Carbon\Carbon::parse($document->expiry_date)->format('M d, Y') }}
-                                    </p>
                                 </a>
                             @endforeach
                         </div>
@@ -273,8 +280,8 @@
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{{ route('pillars.index') }}" class="btn btn-secondary w-100">
-                                <i class="fas fa-cog"></i> Settings
+                            <a href="{{ route('document-types.index') }}" class="btn btn-secondary w-100">
+                                <i class="fas fa-cog"></i> Document Types
                             </a>
                         </div>
                     </div>

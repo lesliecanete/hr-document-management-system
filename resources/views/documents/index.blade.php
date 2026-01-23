@@ -59,6 +59,7 @@
                             <select class="form-select" id="status" name="status">
                                 <option value="">All Status</option>
                                 <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                                <option value="expiring_soon" {{ request('status') == 'active' ? 'selected' : '' }}>Expiring Soon</option>
                                 <option value="expired" {{ request('status') == 'expired' ? 'selected' : '' }}>Expired</option>
                                 <option value="archived" {{ request('status') == 'archived' ? 'selected' : '' }}>Archived</option>
                             </select>
@@ -98,8 +99,10 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>ID</th>
+                                        <th>Bar Code/QR </th>
                                         <th>Title</th>
                                         <th>Pillar</th>
+                                        <th>Document Type/Retention Period</th>
                                         <th>Submitting Party</th>
                                         <th>Document Date</th>
                                         <th>Expiry Date</th>
@@ -116,8 +119,42 @@
                                                 #{{ str_pad($document->id, 5, '0', STR_PAD_LEFT) }}
                                             </span>
                                         </td>
+                                        <td style="vertical-align: top; text-align:center">
+                                           <button type="button" 
+                                                    class="btn btn-sm btn-outline-info"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#qrCodeModal{{ $document->id }}">
+                                                <i class="fas fa-qrcode"></i>
+                                            </button>
+                                            <!-- Modal for each document -->
+                                            <div class="modal fade" id="qrCodeModal{{ $document->id }}" tabindex="-1">
+                                                <div class="modal-dialog modal-sm">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">QR Code: {{ Str::limit($document->title, 20) }}</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <div class="modal-body text-center">
+                                                            <!-- Preload the QR code image -->
+                                                           <div class="flex-shrink-0">
+                                                                <img src="{{ route('documents.qrcode', $document) }}" 
+                                                                    alt="QR Code for {{ $document->file_name }}"
+                                                                    class="img-fluid rounded border shadow-sm"
+                                                                    style="max-width: 150px;">
+                                                            </div>
+                                                            
+                                                            <p class="small text-muted mb-2">
+                                                                Scan to view document
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+
                                         <td>
                                             <div class="d-flex align-items-center">
+                                                
                                                 @if($document->file_path)
                                                     <i class="fas fa-file text-primary me-2"></i>
                                                 @else
@@ -136,10 +173,13 @@
                                         </td>
                                         <td>
                                             <div>
-                                                <span class="badge bg-info">{{ $document->documentType->name ?? 'N/A' }}</span>
-                                                <br>
                                                 <small class="text-muted">{{ $document->documentType->pillar->name ?? 'N/A' }}</small>
                                             </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ $document->documentType->name ?? 'N/A' }}</span>
+                                                <br>
+                                             Retention Years: {{ $document->documentType->retention_years }}<br>
                                         </td>
                                         <td>
                                             @if($document->applicant)
@@ -154,12 +194,13 @@
                                             {{ $document->document_date->format('M d, Y') }}
                                         </td>
                                         <td>
+                                         
                                             @if($document->expiry_date)
                                                 <span class="{{ $document->expiry_date->isPast() ? 'text-danger' : 'text-success' }}">
                                                     {{ $document->expiry_date->format('M d, Y') }}
                                                 </span>
                                             @else
-                                                <span class="text-muted">-</span>
+                                                <span class="badge bg-success">Permanent</span>
                                             @endif
                                         </td>
                                         <td>
@@ -180,15 +221,7 @@
                                             @endif
                                         </td>
                                         <td>
-                                            @if($document->status == 'active')
-                                                <span class="badge bg-success">Active</span>
-                                            @elseif($document->status == 'expired')
-                                                <span class="badge bg-warning">Expired</span>
-                                            @elseif($document->status == 'archived')
-                                                <span class="badge bg-secondary">Archived</span>
-                                            @else
-                                                <span class="badge bg-light text-dark">{{ $document->status }}</span>
-                                            @endif
+                                            <x-document-status-badge :document="$document" :compact="false" :show-days="false" />
                                         </td>
                                         <td class="text-end">
                                             <div class="btn-group btn-group-sm">

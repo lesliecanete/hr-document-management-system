@@ -27,7 +27,7 @@ class DocumentTypeController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'pillar_id' => 'required|exists:hr_pillars,id',
-            'retention_years' => 'required|integer|min:1',
+            'retention_years' => 'required|integer|min:0',
             'requires_person' => 'boolean',
             'description' => 'nullable|string',
         ]);

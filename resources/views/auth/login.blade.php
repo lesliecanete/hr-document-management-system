@@ -41,7 +41,7 @@
         .login-header {
             background: linear-gradient(135deg, rgba(31, 78, 121, 0.9) 0%, rgba(44, 107, 168, 0.9) 100%);
             color: white;
-            padding: 40px 0;
+            padding: 25px 0;
             text-align: center;
             margin-bottom: 40px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -60,7 +60,7 @@
         .login-footer {
             background: rgba(31, 78, 121, 0.9);
             color: white;
-            padding: 25px 0;
+            padding: 20px 0;
             margin-top: auto;
             text-align: center;
             backdrop-filter: blur(5px);

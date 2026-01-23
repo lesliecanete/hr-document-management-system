@@ -13,26 +13,26 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Debug: Log what's happening
-        Log::info('Dashboard accessed', ['user_id' => auth()->id()]);
-
-        // Count documents expiring in next 3 months (90 days)
-        $expiringSoonCount = Document::where('status', 'active')
-            ->whereNotNull('expiry_date')
-            ->where('expiry_date', '>', Carbon::now()) // Not expired yet
-            ->where('expiry_date', '<=', Carbon::now()->addDays(90)) // Within next 90 days (3 months)
+        // Get current date for consistent calculations
+        $today = Carbon::now();
+        $ninetyDaysFromNow = $today->copy()->addDays(90);
+        
+        // Count documents expiring in next 3 months (90 days) - Dynamic calculation
+        $expiringSoonCount = Document::whereNotNull('expiry_date')
+            ->where('expiry_date', '>', $today) // Not expired yet
+            ->where('expiry_date', '<=', $ninetyDaysFromNow) // Within next 90 days
             ->count();
 
         $stats = [
             'total_documents' => Document::count(),
             'active_documents' => Document::where('status', 'active')->count(),
-            'expiring_soon' => $expiringSoonCount, // Updated to 3 months
+            'expiring_soon' => $expiringSoonCount,
+            'expired_documents' => Document::whereNotNull('expiry_date')
+                ->where('expiry_date', '<=', $today)
+                ->where('status', '!=', 'archived')
+                ->count(),
             'total_applicants' => Applicant::where('status', 'active')->count(),
         ];
-
-        // Debug: Check HR pillars
-        $allPillars = HRPillar::where('is_active', true)->get();
-        Log::info('HR Pillars found:', ['count' => $allPillars->count(), 'pillars' => $allPillars->pluck('name')]);
 
         // Get pillars with document count
         $pillars = HRPillar::where('is_active', true)->get();
@@ -41,11 +41,10 @@ class DashboardController extends Controller
             $documentCount = DB::table('documents')
                 ->join('document_types', 'documents.document_type_id', '=', 'document_types.id')
                 ->where('document_types.pillar_id', $pillar->id)
-                ->where('documents.status', 'active') // Only count active documents
+                ->where('documents.status', 'active')
                 ->count();
                 
             $pillar->documents_count = $documentCount;
-            Log::info("Pillar {$pillar->name} has {$documentCount} documents");
         }
 
         $recentDocuments = Document::with(['documentType', 'applicant', 'uploadedBy'])
@@ -53,20 +52,40 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
-        // Get documents expiring in next 3 months
-        $expiringDocuments = Document::where('status', 'active')
-            ->whereNotNull('expiry_date')
-            ->where('expiry_date', '>', Carbon::now()) // Not expired yet
-            ->where('expiry_date', '<=', Carbon::now()->addDays(90)) // Within next 90 days (3 months)
+        // Get documents expiring in next 3 months - Dynamic calculation
+        $expiringDocuments = Document::whereNotNull('expiry_date')
+            ->where('expiry_date', '>', $today) // Not expired yet
+            ->where('expiry_date', '<=', $ninetyDaysFromNow) // Within next 90 days
             ->with(['documentType', 'applicant'])
-            ->orderBy('expiry_date', 'asc') // Soonest first
-            ->take(10) // Show more since we have 3 months worth
-            ->get();
+            ->orderBy('expiry_date', 'asc')
+            ->take(10)
+            ->get()
+            ->map(function($document) use ($today) {
+                // Calculate days remaining for each document
+                $document->days_until_expiry = $today->diffInDays($document->expiry_date);
+                return $document;
+            });
 
-        // Debug: Log final data
-        Log::info('Final pillars data:', ['pillars_count' => $pillars->count()]);
-        Log::info('Expiring documents count:', ['count' => $expiringDocuments->count()]);
-
-        return view('dashboard', compact('stats', 'pillars', 'recentDocuments', 'expiringDocuments'));
+        return view('dashboard', compact(
+            'stats', 
+            'pillars', 
+            'recentDocuments', 
+            'expiringDocuments',
+            'today'
+        ));
+    }
+    
+    // Optional: Add a method to filter by custom days
+    public function getExpiringDocuments($days = 90)
+    {
+        $today = Carbon::now();
+        $targetDate = $today->copy()->addDays($days);
+        
+        return Document::whereNotNull('expiry_date')
+            ->where('expiry_date', '>', $today)
+            ->where('expiry_date', '<=', $targetDate)
+            ->with(['documentType', 'applicant'])
+            ->orderBy('expiry_date', 'asc')
+            ->paginate(20);
     }
 }

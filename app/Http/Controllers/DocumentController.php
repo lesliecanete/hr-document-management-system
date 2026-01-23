@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB; // Add this at the top
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class DocumentController extends Controller
 {
@@ -167,8 +168,13 @@ class DocumentController extends Controller
             $filePath = $file->storeAs('documents', $fileName, 'public');
 
             // Calculate expiry date based on retention policy
-            $expiryDate = Carbon::parse($validated['document_date'])->addYears($documentType->retention_years);
+            //$expiryDate = Carbon::parse($validated['document_date'])->addYears($documentType->retention_years);
+            $expiryDate = null;
 
+            if ($documentType->retention_years > 0) {
+                $expiryDate = Carbon::parse($validated['document_date'])
+                    ->addYears($documentType->retention_years);
+            }
             // Create the document
             Document::create([
                 'title' => $validated['title'],
@@ -267,13 +273,24 @@ class DocumentController extends Controller
             $updateData['file_type'] = $file->getClientOriginalExtension();
         }
 
-        // Calculate new expiry date if document type changed
-        if ($document->document_type_id != $request->document_type_id) {
-            $documentType = DocumentType::find($request->document_type_id);
-            $updateData['expiry_date'] = now()->addYears($documentType->retention_years);
+        // Get the new document type
+        $documentType = DocumentType::find($request->document_type_id);
+        
+        // Parse the document date
+        $documentDate = Carbon::parse($request->document_date);
+        
+        // Calculate expiry date from document date + retention years
+        //$updateData['expiry_date'] = $documentDate->copy()->addYears($documentType->retention_years);
+        if ($documentType->retention_years > 0) {
+            $updateData['expiry_date'] = $documentDate
+                ->copy()
+                ->addYears($documentType->retention_years);
+        } else {
+            $updateData['expiry_date'] = null;
         }
 
         $document->update($updateData);
+
 
         // Update document status based on new expiry date
         $document->updateStatus();
@@ -312,14 +329,38 @@ class DocumentController extends Controller
 
     public function archiveExpired()
     {
-        $expiredDocuments = Document::where('expiry_date', '<=', Carbon::today())
+       /* $expiredDocuments = Document::where('expiry_date', '<=', Carbon::today())
             ->where('status', '!=', 'archived')
-            ->get();
+            ->get(); */
 
+        $expiredDocuments = Document::whereNotNull('expiry_date')
+        ->where('expiry_date', '<=', Carbon::today())
+        ->where('status', '!=', 'archived')
+        ->get();
         foreach ($expiredDocuments as $document) {
             $document->update(['status' => 'archived']);
         }
 
         return back()->with('success', count($expiredDocuments) . ' documents archived.');
+    }
+
+    public function generateQRCode(Document $document, Request $request)
+    {
+        $format = $request->get('format', 'svg');
+        $size = $request->get('size', 300);
+        
+        // Generate the FULL PUBLIC URL to the file
+        $fileUrl = asset('storage/' . $document->file_path);
+        
+        // Add cache buster if needed
+        // $fileUrl .= '?t=' . time();
+        
+        if ($format === 'png') {
+            return response(QrCode::format('png')->size($size)->generate($fileUrl))
+                ->header('Content-Type', 'image/png');
+        }
+        
+        return response(QrCode::size($size)->generate($fileUrl))
+            ->header('Content-Type', 'image/svg+xml');
     }
 }

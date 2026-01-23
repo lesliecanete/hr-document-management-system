@@ -135,6 +135,9 @@ Route::get('/get-document-types/{pillar}', function ($pillarId) {
 // Legacy home route
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+Route::get('/documents/{document}/qrcode', [DocumentController::class, 'generateQRCode'])
+    ->name('documents.qrcode');
+
 Route::get('/debug-data', function() {
     echo "<h2>Database Data Debug</h2>";
     

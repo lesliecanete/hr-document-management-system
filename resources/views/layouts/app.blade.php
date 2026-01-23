@@ -33,7 +33,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255, 255, 255, 0.88);
+            background: rgba(255, 255, 255, 0.78);
             z-index: -1;
         }
         
@@ -235,7 +235,7 @@
         .footer {
             background: rgba(31, 78, 121, 0.95);
             color: white;
-            padding: 25px 0;
+            padding: 10px 0 15px 0;
             margin-top: auto;
             width: 100%;
             z-index: 100;

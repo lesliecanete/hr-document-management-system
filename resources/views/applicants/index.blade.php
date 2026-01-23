@@ -26,7 +26,7 @@
                     <div class="card-header bg-white py-3">
                         <h5 class="card-title mb-0">
                             <i class="fas fa-list text-muted"></i> Submitting Party List
-                            <span class="badge bg-secondary ms-2">{{ $applicants->total() ?? 0 }} applicants</span>
+                            <span class="badge bg-secondary ms-2">{{ $applicants->total() ?? 0 }} submitting parties</span>
                         </h5>
                     </div>
                     <div class="card-body p-0">

@@ -16,14 +16,14 @@
                 <i class="fas fa-file-alt"></i> Document Details
             </h1>
             <div class="btn-group">
-                <a href="{{ route('documents.download', $document) }}" class="btn btn-success">
+               <!-- <a href="{{ route('documents.download', $document) }}" class="btn btn-success">
                     <i class="fas fa-download"></i> Download
                 </a>
                 @if(auth()->user()->canEditDocument($document))
                 <a href="{{ route('documents.edit', $document) }}" class="btn btn-warning">
                     <i class="fas fa-edit"></i> Edit
                 </a>
-                @endif
+                @endif -->
                 <a href="{{ route('documents.index') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Back
                 </a>
@@ -64,14 +64,11 @@
                                         <th>Expiry Date:</th>
                                         <td>
                                             @if($document->expiry_date)
-                                                <span class="{{ $document->isExpiringSoon() ? 'text-warning fw-bold' : '' }}">
+                                                <span class="{{ $document->expiry_date->isPast() ? 'text-danger' : 'text-success' }}">
                                                     {{ $document->expiry_date->format('F d, Y') }}
                                                 </span>
-                                                @if($document->isExpiringSoon())
-                                                    <br><small class="text-warning">Expiring soon!</small>
-                                                @endif
                                             @else
-                                                <span class="text-muted">N/A</span>
+                                                <span class="text-muted">-</span>
                                             @endif
                                         </td>
                                     </tr>
@@ -82,13 +79,7 @@
                                     <tr>
                                         <th width="40%">Status:</th>
                                         <td>
-                                            @if($document->status == 'active')
-                                                <span class="badge bg-success">Active</span>
-                                            @elseif($document->status == 'expiring_soon')
-                                                <span class="badge bg-warning">Expiring Soon</span>
-                                            @else
-                                                <span class="badge bg-secondary">Archived</span>
-                                            @endif
+                                               <x-document-status-badge :document="$document" :compact="false" :show-days="true" />
                                         </td>
                                     </tr>
                                     <tr>
@@ -111,41 +102,67 @@
                         @if($document->applicant)
                         <div class="mt-4">
                             <h6>Submitting Party Information</h6>
-                            <table class="table table-bordered">
+                           <table class="table table-bordered">
                                 <tr>
                                     <th width="30%">Submitting Party Name:</th>
                                     <td>
-                                        <a href="{{ route('submitting-parties.show', $document->applicant->id) }}">
-                                            {{ $document->applicant->full_name }}
+                                        <a href="{{ route('submitting-parties.show', $document->applicant->id) }}" class="text-decoration-none">
+                                            <strong>{{ $document->applicant->full_name }}</strong>
                                         </a>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>Email:</th>
-                                    <td>{{ $document->applicant->email }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Phone:</th>
-                                    <td>{{ $document->applicant->phone ?? 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Position:</th>
-                                    <td>{{ $document->applicant->position  ?? 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Status:</th>
+                                    <th>Contact Information:</th>
                                     <td>
-                                        @php
-                                            $statusColors = [
-                                                'active' => 'success',
-                                                'hired' => 'primary', 
-                                                'rejected' => 'danger',
-                                                'withdrawn' => 'secondary'
-                                            ];
-                                        @endphp
-                                        <span class="badge bg-{{ $statusColors[$document->applicant->status] ?? 'secondary' }}">
-                                            {{ ucfirst($document->applicant->status) }}
-                                        </span>
+                                        <div class="d-md-flex gap-4">
+                                            <div class="flex-fill">
+                                                <div class="mb-2">
+                                                    <i class="fas fa-envelope text-muted me-2"></i>
+                                                    <strong>Email:</strong><br>
+                                                    <a href="mailto:{{ $document->applicant->email }}" class="text-decoration-none">
+                                                        {{ $document->applicant->email }}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="flex-fill">
+                                                <div class="mb-2">
+                                                    <i class="fas fa-phone text-muted me-2"></i>
+                                                    <strong>Phone:</strong><br>
+                                                    {{ $document->applicant->phone ?? 'N/A' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Details:</th>
+                                    <td>
+                                        <div class="d-md-flex gap-4">
+                                            <div class="flex-fill">
+                                                <div class="mb-2">
+                                                    <i class="fas fa-briefcase text-muted me-2"></i>
+                                                    <strong>Position:</strong><br>
+                                                    {{ $document->applicant->position ?? 'N/A' }}
+                                                </div>
+                                            </div>
+                                            <div class="flex-fill">
+                                                <div class="mb-2">
+                                                    <i class="fas fa-info-circle text-muted me-2"></i>
+                                                    <strong>Status:</strong><br>
+                                                    @php
+                                                        $statusColors = [
+                                                            'active' => 'success',
+                                                            'hired' => 'primary', 
+                                                            'rejected' => 'danger',
+                                                            'withdrawn' => 'secondary'
+                                                        ];
+                                                    @endphp
+                                                    <span class="badge bg-{{ $statusColors[$document->applicant->status] ?? 'secondary' }}">
+                                                        {{ ucfirst($document->applicant->status) }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
                             </table>
@@ -168,18 +185,17 @@
                         @endif
                     </div>
                 </div>
+               
             </div>
 
             <div class="col-md-4">
-                <div class="card">
+                  <div class="card">
                     <div class="card-header">
                         <h6 class="card-title mb-0">Document Actions</h6>
                     </div>
                     <div class="card-body">
                         <div class="d-grid gap-2">
-                            <a href="{{ route('documents.download', $document) }}" class="btn btn-success">
-                                <i class="fas fa-download"></i> Download Document
-                            </a>
+                          
                             <a href="{{ route('documents.edit', $document) }}" class="btn btn-warning">
                                 <i class="fas fa-edit"></i> Edit Details
                             </a>
@@ -197,7 +213,69 @@
                         </div>
                     </div>
                 </div>
-
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-qrcode"></i> Document QR Code
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <!-- QR Code Image -->
+                        <div class="flex-shrink-0">
+                            <img src="{{ route('documents.qrcode', $document) }}" 
+                                alt="QR Code for {{ $document->file_name }}"
+                                class="img-fluid rounded border shadow-sm"
+                                style="max-width: 150px;">
+                        </div>
+                        
+                       <!-- File Information -->
+                        <div class="flex-grow-1 mt-3">
+                            <div class="alert alert-success mb-3">
+                                <i class="fas fa-external-link-alt me-2"></i>
+                                Scanning this QR code will open/download: 
+                                <strong>{{ $document->file_name }}</strong>
+                            </div>
+                                                       
+                            <!-- Test Links -->
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <a href="{{ asset('storage/' . $document->file_path) }}" 
+                                    target="_blank"
+                                    class="btn btn-success w-100 d-flex align-items-center justify-content-center gap-2">
+                                        <i class="fas fa-external-link-alt"></i>
+                                        <span>Open File</span>
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    <a href="{{ route('documents.download', $document) }}" 
+                                    class="btn btn-secondary w-100 d-flex align-items-center justify-content-center gap-2">
+                                        <i class="fas fa-download"></i>
+                                        <span>Download File</span>
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <!-- QR Download Links -->
+                            <div class="mt-3">
+                                <h6 class="mb-2">Download QR Code:</h6>
+                                <div class="btn-group w-100">
+                                    <a href="{{ route('documents.qrcode', $document) }}?format=svg" 
+                                    class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center gap-1"
+                                    download="qr-{{ $document->id }}-{{ Str::slug($document->title) }}.svg">
+                                        <i class="fas fa-download"></i>
+                                        <span>SVG</span>
+                                    </a>
+                                    <a href="{{ route('documents.qrcode', $document) }}?format=png" 
+                                    class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center gap-1"
+                                    download="qr-{{ $document->id }}-{{ Str::slug($document->title) }}.png">
+                                        <i class="fas fa-download"></i>
+                                        <span>PNG</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                          
+                </div>
                 <div class="card mt-4">
                     <div class="card-header">
                         <h6 class="card-title mb-0">Document Information</h6>
@@ -225,19 +303,7 @@
                         <div class="mb-2">
                             <strong>Retention Period:</strong>
                             <br>{{ $document->documentType->retention_years ?? 'N/A' }} years
-                        </div>
-                        <div class="mb-2">
-                            <strong>Days until expiry:</strong>
-                            <br>
-                            @php
-                                $daysUntilExpiry = \Carbon\Carbon::now()->diffInDays($document->expiry_date, false);
-                            @endphp
-                            @if($daysUntilExpiry > 0)
-                                <span class="text-success">{{ $daysUntilExpiry }} days</span>
-                            @else
-                                <span class="text-danger">Expired {{ abs($daysUntilExpiry) }} days ago</span>
-                            @endif
-                        </div>
+                        </div>  
                     </div>
                 </div>
                 @endif

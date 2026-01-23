@@ -5,7 +5,7 @@
 @section('content')
     <div class="container mt-4">
         <div class="row justify-content-center">
-            <div class="col-md-8">
+            <div class="col-lg-10">
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title mb-0">
@@ -16,246 +16,244 @@
                         <form method="POST" action="{{ route('documents.store') }}" enctype="multipart/form-data" id="documentForm">
                             @csrf
 
-                            <div class="mb-3">
-                                <label for="title" class="form-label">Document Title *</label>
-                                <input type="text" class="form-control @error('title') is-invalid @enderror" 
-                                       id="title" name="title" value="{{ old('title') }}" required>
-                                @error('title')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                            <div class="row">
+                                <!-- Left Column: Basic Information -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="title" class="form-label">Document Title *</label>
+                                        <input type="text" class="form-control @error('title') is-invalid @enderror" 
+                                               id="title" name="title" value="{{ old('title') }}" required>
+                                        @error('title')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
 
-                            <div class="mb-3">
-                                <label for="pillar" class="form-label">HR Pillar *</label>
-                                <select class="form-select @error('pillar') is-invalid @enderror" id="pillar" name="pillar" required>
-                                    <option value="">Select HR Pillar</option>
-                                    @foreach($pillars as $pillar)
-                                        <option value="{{ $pillar->id }}" {{ old('pillar') == $pillar->id ? 'selected' : '' }}>
-                                            {{ $pillar->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('pillar')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                                    <div class="mb-3">
+                                        <label for="description" class="form-label">Description</label>
+                                        <textarea class="form-control @error('description') is-invalid @enderror" 
+                                                  id="description" name="description" rows="2">{{ old('description') }}</textarea>
+                                        @error('description')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
 
-                            <div class="mb-3">
-                                <label for="document_type_id" class="form-label">Document Type *</label>
-                                <select class="form-select @error('document_type_id') is-invalid @enderror" 
-                                        id="document_type_id" name="document_type_id" required disabled>
-                                    <option value="">First select an HR Pillar</option>
-                                </select>
-                                <div class="form-text" id="documentTypeHelp">
-                                    Select an HR Pillar first to see available document types
-                                </div>
-                                @error('document_type_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <!-- ========== APPLICANT TAB SECTION ========== -->
-                            <div class="mb-4">
-                                <label class="form-label">Submitting Party *</label>
-                                
-                                <!-- Applicant Selection Tabs -->
-                                <ul class="nav nav-tabs mb-3" id="applicantTab" role="tablist">
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link active" id="select-applicant-tab" data-bs-toggle="tab" 
-                                                data-bs-target="#select-applicant-pane" type="button" role="tab">
-                                            <i class="fas fa-search me-1"></i> Select Existing Submitting Party
-                                        </button>
-                                    </li>
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="create-applicant-tab" data-bs-toggle="tab" 
-                                                data-bs-target="#create-applicant-pane" type="button" role="tab">
-                                            <i class="fas fa-user-plus me-1"></i> Create New Submitting Party
-                                        </button>
-                                    </li>
-                                </ul>
-                                
-                                <!-- Tab Content -->
-                                <div class="tab-content border border-top-0 p-3" id="applicantTabContent">
-                                    <!-- Tab 1: Select Existing Applicant -->
-                                    <div class="tab-pane fade show active" id="select-applicant-pane" role="tabpanel">
-                                        <div class="mb-3">
-                                            <div class="input-group">
-                                                <span class="input-group-text">
-                                                    <i class="fas fa-search"></i>
-                                                </span>
-                                                <input type="text" class="form-control" 
-                                                       id="applicantSearch" 
-                                                       placeholder="Search by name, email, or phone...">
-                                                <button class="btn btn-outline-secondary" type="button" 
-                                                        id="clearSearch">
-                                                    Clear
-                                                </button>
-                                            </div>
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label for="pillar" class="form-label">HR Pillar *</label>
+                                            <select class="form-select @error('pillar') is-invalid @enderror" id="pillar" name="pillar" required>
+                                                <option value="">Select HR Pillar</option>
+                                                @foreach($pillars as $pillar)
+                                                    <option value="{{ $pillar->id }}" {{ old('pillar') == $pillar->id ? 'selected' : '' }}>
+                                                        {{ $pillar->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('pillar')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
                                         </div>
-                                        
-                                        <div id="searchResults" style="max-height: 300px; overflow-y: auto;">
-                                            <!-- Search results will appear here -->
-                                            <div class="list-group">
-                                                @foreach($applicants as $applicant)
-                                                <label class="list-group-item d-flex justify-content-between align-items-center">
-                                                    <div class="d-flex align-items-center">
-                                                        <input class="form-check-input me-3" type="radio" 
-                                                               name="applicant_id" 
-                                                               value="{{ $applicant->id }}"
-                                                               {{ old('applicant_id') == $applicant->id ? 'checked' : '' }}
-                                                               id="applicant_{{ $applicant->id }}"
-                                                               data-applicant-name="{{ $applicant->full_name }}">
+
+                                       
+                                    </div>
+                                    <div class="row">
+                                         <div class="col-md-12 mb-3">
+                                            <label for="document_type_id" class="form-label">Document Type *</label>
+                                            <select class="form-select @error('document_type_id') is-invalid @enderror" 
+                                                    id="document_type_id" name="document_type_id" required disabled>
+                                                <option value="">First select HR Pillar</option>
+                                            </select>
+                                            <small class="form-text text-muted" id="documentTypeHelp">
+                                                Select HR Pillar first
+                                            </small>
+                                            @error('document_type_id')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+
+                                                <div id="documentTypeDescription" class="alert alert-info mb-2 mt-2 d-none">
+                                                    <div class="d-flex">
                                                         <div>
-                                                            <strong>{{ $applicant->full_name }}</strong>
-                                                            <div class="text-muted small">
-                                                                <i class="fas fa-envelope me-1"></i>{{ $applicant->email }}
-                                                                @if($applicant->phone)
-                                                                <br><i class="fas fa-phone me-1"></i>{{ $applicant->phone }}
-                                                                @endif
-                                                                @if($applicant->position)
-                                                                <br><i class="fas fa-briefcase me-1"></i>{{ $applicant->position }}
-                                                                @endif
-                                                            </div>
+                                                            <strong id="docTypeName" class="d-block"></strong>
+                                                            <p class="mb-0 small" id="docTypeDescText"></p>
+                                                            <p class="mb-0 small mt-1">
+                                                                <i class="fas fa-clock me-1"></i>
+                                                                <span id="docTypeRetention"></span> 
+                                                            </p>
                                                         </div>
                                                     </div>
-                                                    <span class="badge bg-{{ $applicant->status === 'active' ? 'success' : 'secondary' }}">
-                                                        {{ ucfirst($applicant->status) }}
-                                                    </span>
-                                                </label>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                        
-                                        <div id="noResults" class="alert alert-info mt-3 d-none">
-                                            <i class="fas fa-info-circle me-2"></i>
-                                            No Submitting Party found. Try a different search or create a new Submitting Party.
-                                        </div>
-                                        
-                                        <div id="selectedApplicantInfo" class="alert alert-success mt-3 d-none">
-                                            <i class="fas fa-check-circle me-2"></i>
-                                            <span id="selectedApplicantText"></span>
+                                                </div>
                                         </div>
                                     </div>
-                                    
-                                    <!-- Tab 2: Create New Applicant -->
-                                    <div class="tab-pane fade" id="create-applicant-pane" role="tabpanel">
-                                        <div class="alert alert-info mb-3">
-                                            <i class="fas fa-info-circle me-2"></i>
-                                            New Submitting Party will be created and automatically selected for this document.
-                                        </div>
-                                        
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <label for="new_first_name" class="form-label">First Name *</label>
-                                                <input type="text" class="form-control @error('new_first_name') is-invalid @enderror" 
-                                                       id="new_first_name" 
-                                                       name="new_first_name"
-                                                       value="{{ old('new_first_name') }}">
-                                                @error('new_first_name')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label for="new_last_name" class="form-label">Last Name *</label>
-                                                <input type="text" class="form-control @error('new_last_name') is-invalid @enderror" 
-                                                       id="new_last_name" 
-                                                       name="new_last_name"
-                                                       value="{{ old('new_last_name') }}">
-                                                @error('new_last_name')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="row">
-                                             <div class="col-md-6 mb-3">
-                                                <label for="new_position" class="form-label">Position</label>
-                                                <input type="text" class="form-control @error('new_position') is-invalid @enderror" 
-                                                    id="new_position" 
-                                                    name="new_position"
-                                                    value="{{ old('new_position') }}"
-                                                    placeholder="e.g., Teacher I, Administrative Officer">
-                                                @error('new_position')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label for="new_email" class="form-label">Email *</label>
-                                                <input type="email" class="form-control @error('new_email') is-invalid @enderror" 
-                                                       id="new_email" 
-                                                       name="new_email"
-                                                       value="{{ old('new_email') }}">
-                                                @error('new_email')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label for="new_phone" class="form-label">Phone</label>
-                                                <input type="text" class="form-control @error('new_phone') is-invalid @enderror" 
-                                                       id="new_phone" 
-                                                       name="new_phone"
-                                                       value="{{ old('new_phone') }}">
-                                                @error('new_phone')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        
-                                        
-                                        <input type="hidden" id="applicant_created" name="applicant_created" value="0">
+                                  
+                                    <div class="mb-3">
+                                        <label for="document_date" class="form-label">Document Date *</label>
+                                        <input type="date" class="form-control @error('document_date') is-invalid @enderror" 
+                                               id="document_date" name="document_date" value="{{ old('document_date') }}" required 
+                                               onchange="updateDateDisplay(this)">
+                                        @error('document_date')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                        <small class="form-text text-muted">
+                                            Date in MM/DD/YYYY: <strong id="dateDisplayText"></strong>
+                                        </small>
                                     </div>
                                 </div>
-                                
-                                @error('applicant_id')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <!-- ========== END APPLICANT TAB SECTION ========== -->
 
-                            <div class="mb-3">
-                                <label for="document_date" class="form-label">Document Date *</label>
-                                <input type="date" class="form-control @error('document_date') is-invalid @enderror" 
-                                       id="document_date" name="document_date" value="{{ old('document_date') }}" required>
-                                @error('document_date')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <!-- Right Column: File & Submitting Party -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="document_file" class="form-label">Document File *</label>
+                                        <div class="input-group">
+                                            <input type="file" class="form-control @error('document_file') is-invalid @enderror" 
+                                                   id="document_file" name="document_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('document_file').value=''">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <div class="form-text">PDF, DOC, DOCX, JPG, PNG (Max: 10MB)</div>
+                                        @error('document_file')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="notes" class="form-label">Notes</label>
+                                        <textarea class="form-control @error('notes') is-invalid @enderror" 
+                                                  id="notes" name="notes" rows="2" placeholder="Any additional notes...">{{ old('notes') }}</textarea>
+                                        @error('notes')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+
+                                    <!-- ========== APPLICANT SECTION - COMPACT VERSION ========== -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Submitting Party *</label>
+                                        
+                                        <!-- Compact Applicant Selection -->
+                                        <div class="border rounded p-3">
+                                            <!-- Tab Headers -->
+                                            <div class="d-flex mb-3 border-bottom pb-2">
+                                                <button type="button" class="btn btn-sm btn-outline-primary me-2 active" 
+                                                        id="selectExistingBtn" onclick="switchApplicantTab('existing')">
+                                                    <i class="fas fa-search me-1"></i> Select Existing
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                                        id="createNewBtn" onclick="switchApplicantTab('new')">
+                                                    <i class="fas fa-user-plus me-1"></i> Create New
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Existing Applicant Selection (Initially visible) -->
+                                            <div id="existingApplicantSection">
+                                                <div class="input-group input-group-sm mb-2">
+                                                    <input type="text" class="form-control form-control-sm" 
+                                                           id="applicantSearch" placeholder="Search name, email, phone...">
+                                                    <button class="btn btn-outline-secondary btn-sm" type="button" 
+                                                            id="clearSearch">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                                
+                                                <div id="searchResults" style="max-height: 150px; overflow-y: auto;" class="mb-2">
+                                                    <div class="list-group list-group-flush">
+                                                        @foreach($applicants as $applicant)
+                                                        <label class="list-group-item list-group-item-action py-2">
+                                                            <div class="form-check d-flex align-items-center mb-0">
+                                                                <input class="form-check-input me-2" type="radio" 
+                                                                       name="applicant_id" 
+                                                                       value="{{ $applicant->id }}"
+                                                                       {{ old('applicant_id') == $applicant->id ? 'checked' : '' }}
+                                                                       id="applicant_{{ $applicant->id }}"
+                                                                       onchange="selectApplicant(this)">
+                                                                <div class="small">
+                                                                    <strong class="d-block">{{ $applicant->full_name }}</strong>
+                                                                    <span class="text-muted">
+                                                                        {{ $applicant->email }}
+                                                                        @if($applicant->position)
+                                                                        • {{ $applicant->position }}
+                                                                        @endif
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </label>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                                
+                                                <div id="selectedApplicantInfo" class="alert alert-success py-2 d-none mb-0">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span>
+                                                            <i class="fas fa-check-circle me-1"></i>
+                                                            <span id="selectedApplicantText"></span>
+                                                        </span>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                                onclick="clearApplicantSelection()">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div id="noResults" class="alert alert-info py-2 d-none">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    No results found. Try different keywords.
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- New Applicant Form (Initially hidden) -->
+                                            <div id="newApplicantSection" style="display: none;">
+                                                <div class="alert alert-info py-2 mb-2">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    New submitting party will be created
+                                                </div>
+                                                
+                                                <div class="row g-2">
+                                                    <div class="col-6">
+                                                        <input type="text" class="form-control form-control-sm" 
+                                                               id="new_first_name" name="new_first_name"
+                                                               value="{{ old('new_first_name') }}" 
+                                                               placeholder="First Name *">
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <input type="text" class="form-control form-control-sm" 
+                                                               id="new_last_name" name="new_last_name"
+                                                               value="{{ old('new_last_name') }}" 
+                                                               placeholder="Last Name *">
+                                                    </div>
+                                                    <div class="col-12 mt-2">
+                                                        <input type="email" class="form-control form-control-sm" 
+                                                               id="new_email" name="new_email"
+                                                               value="{{ old('new_email') }}" 
+                                                               placeholder="Email *">
+                                                    </div>
+                                                    <div class="col-12 mt-2">
+                                                        <input type="text" class="form-control form-control-sm" 
+                                                               id="new_position" name="new_position"
+                                                               value="{{ old('new_position') }}" 
+                                                               placeholder="Position (optional)">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        @error('applicant_id')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <!-- ========== END APPLICANT SECTION ========== -->
+                                </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label for="document_file" class="form-label">Document File *</label>
-                                <input type="file" class="form-control @error('document_file') is-invalid @enderror" 
-                                       id="document_file" name="document_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
-                                <div class="form-text">Supported formats: PDF, DOC, DOCX, JPG, JPEG, PNG (Max: 10MB)</div>
-                                @error('document_file')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="description" class="form-label">Description</label>
-                                <textarea class="form-control @error('description') is-invalid @enderror" 
-                                          id="description" name="description" rows="3">{{ old('description') }}</textarea>
-                                @error('description')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="notes" class="form-label">Notes</label>
-                                <textarea class="form-control @error('notes') is-invalid @enderror" 
-                                          id="notes" name="notes" rows="2">{{ old('notes') }}</textarea>
-                                @error('notes')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary" id="submitBtn">
-                                    <i class="fas fa-upload"></i> Upload Document
-                                </button>
-                                <a href="{{ route('documents.index') }}" class="btn btn-secondary">
-                                    <i class="fas fa-times"></i> Cancel
-                                </a>
+                            <!-- Action Buttons -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between">
+                                        <a href="{{ route('documents.index') }}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-arrow-left me-1"></i> Back to List
+                                        </a>
+                                        <button type="submit" class="btn btn-primary px-4" id="submitBtn">
+                                            <i class="fas fa-upload me-1"></i> Upload Document
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -264,137 +262,177 @@
         </div>
     </div>
 
-    
+    <style>
+        .list-group-item {
+            border: none;
+            border-bottom: 1px solid #eee;
+            padding: 0.5rem 0.75rem;
+        }
+        .list-group-item:last-child {
+            border-bottom: none;
+        }
+        .form-control-sm {
+            font-size: 0.875rem;
+        }
+    </style>
+    <script>
+        function updateDateDisplay(input) {
+                if (input.value) {
+                    const date = new Date(input.value);
+                    const formatted = `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${date.getFullYear()}`;
+                    document.getElementById('dateDisplayText').textContent = formatted;
+                }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+        
+            
+            // Initialize on page load
+            const datePicker = document.getElementById('document_date');
+            if (datePicker) {
+                updateDateDisplay(datePicker);
+            }
+            
+        });
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const pillarSelect = document.getElementById('pillar');
             const documentTypeSelect = document.getElementById('document_type_id');
             const documentTypeHelp = document.getElementById('documentTypeHelp');
-            const submitBtn = document.getElementById('submitBtn');
-
-            console.log('📄 Document upload page loaded');
+            const applicantCreatedInput = document.createElement('input');
+            applicantCreatedInput.type = 'hidden';
+            applicantCreatedInput.name = 'applicant_created';
+            applicantCreatedInput.value = '0';
+            document.getElementById('documentForm').appendChild(applicantCreatedInput);
 
             // ========== DOCUMENT TYPE LOADING ==========
-            // Load document types when pillar is selected
+                       // ========== DOCUMENT TYPE LOADING ==========
             pillarSelect.addEventListener('change', function() {
                 const pillarId = this.value;
-                console.log('🔄 Pillar selected:', pillarId);
+                const descriptionDiv = document.getElementById('documentTypeDescription');
                 
-                // Show loading state
-                documentTypeSelect.innerHTML = '<option value="">Loading document types...</option>';
+                documentTypeSelect.innerHTML = '<option value="">Loading...</option>';
                 documentTypeSelect.disabled = true;
                 documentTypeHelp.textContent = 'Loading document types...';
-                documentTypeHelp.className = 'form-text text-info';
+                descriptionDiv.classList.add('d-none');
 
                 if (pillarId) {
-                    console.log('📡 Fetching document types for pillar ID:', pillarId);
-                    
                     fetch(`/get-document-types/${pillarId}`)
-                        .then(response => {
-                            console.log('📨 Response status:', response.status);
-                            
-                            if (!response.ok) {
-                                throw new Error(`HTTP error! status: ${response.status}`);
-                            }
-                            return response.json();
-                        })
+                        .then(response => response.json())
                         .then(data => {
-                            console.log('✅ Received data:', data);
-                            
-                            // Clear the dropdown
                             documentTypeSelect.innerHTML = '<option value="">Select Document Type</option>';
                             
                             if (data && data.length > 0) {
-                                // Add document types to dropdown
                                 data.forEach(type => {
                                     const option = document.createElement('option');
                                     option.value = type.id;
-                                    option.textContent = `${type.name} (${type.retention_years} years retention)`;
+                                    option.textContent = `${type.name} (${type.retention_years} years)`;
                                     
-                                    // Add data attributes for employee requirement
-                                    if (type.requires_person) {
-                                        option.setAttribute('data-requires-person', 'true');
-                                    }
+                                    // Store description and retention in dataset
+                                    option.dataset.description = type.description || '';
+                                    option.dataset.retention = type.retention_years || 0;
                                     
                                     documentTypeSelect.appendChild(option);
                                 });
                                 
-                                documentTypeHelp.textContent = `Found ${data.length} document type(s)`;
-                                documentTypeHelp.className = 'form-text text-success';
-                                console.log(`✅ Loaded ${data.length} document type(s)`);
+                                documentTypeHelp.textContent = `${data.length} document type(s) available`;
                             } else {
-                                // No document types found
-                                documentTypeSelect.innerHTML = '<option value="">No document types available for this pillar</option>';
-                                documentTypeHelp.textContent = 'No document types found for the selected HR Pillar';
-                                documentTypeHelp.className = 'form-text text-warning';
-                                console.log('⚠️ No document types found for this pillar');
+                                documentTypeSelect.innerHTML = '<option value="">No document types</option>';
+                                documentTypeHelp.textContent = 'No document types found';
                             }
                             
                             documentTypeSelect.disabled = false;
                         })
                         .catch(error => {
-                            console.error('❌ Error fetching document types:', error);
-                            documentTypeSelect.innerHTML = '<option value="">Error loading document types</option>';
-                            documentTypeHelp.textContent = 'Error: Could not load document types. Please try again.';
-                            documentTypeHelp.className = 'form-text text-danger';
+                            console.error('Error:', error);
+                            documentTypeSelect.innerHTML = '<option value="">Error loading</option>';
+                            documentTypeHelp.textContent = 'Error loading document types';
                             documentTypeSelect.disabled = false;
                         });
                 } else {
-                    // No pillar selected
                     documentTypeSelect.innerHTML = '<option value="">Select Document Type</option>';
                     documentTypeSelect.disabled = true;
-                    documentTypeHelp.textContent = 'Select an HR Pillar first to see available document types';
-                    documentTypeHelp.className = 'form-text';
+                    documentTypeHelp.textContent = 'Select HR Pillar first';
+                    descriptionDiv.classList.add('d-none');
                 }
             });
 
-            // If pillar is already selected (from form validation), load its document types
-            if (pillarSelect.value) {
-                console.log('🔄 Pillar already selected, triggering change event');
-                pillarSelect.dispatchEvent(new Event('change'));
-            }
-            
-            // Add employee requirement logic based on selected document type
+            // Add this event listener to show description when document type is selected
             documentTypeSelect.addEventListener('change', function() {
                 const selectedOption = this.options[this.selectedIndex];
-                const requiresPerson = selectedOption.getAttribute('data-requires-person') === 'true';
+                const descriptionDiv = document.getElementById('documentTypeDescription');
                 
-                if (requiresPerson) {
-                    documentTypeHelp.textContent = '⚠️ This document type requires an applicant association';
-                    documentTypeHelp.className = 'form-text text-warning';
+                if (this.value && selectedOption.dataset.description) {
+                    document.getElementById('docTypeRetention').textContent = selectedOption.dataset.description;
+                    document.getElementById('documentTypeHelp').textContent = "";
+                    descriptionDiv.classList.remove('d-none');
                 } else {
-                    documentTypeHelp.textContent = 'Submitted by association is optional for this document type';
-                    documentTypeHelp.className = 'form-text text-muted';
+                    descriptionDiv.classList.add('d-none');
                 }
             });
             
             // ========== APPLICANT TAB FUNCTIONALITY ==========
-            const applicantCreatedInput = document.getElementById('applicant_created');
-            const applicantSearchInput = document.getElementById('applicantSearch');
-            const clearSearchBtn = document.getElementById('clearSearch');
-            const searchResults = document.getElementById('searchResults');
-            const noResults = document.getElementById('noResults');
-            const selectedApplicantInfo = document.getElementById('selectedApplicantInfo');
-            const selectedApplicantText = document.getElementById('selectedApplicantText');
-            
-            // Tab switching logic
-            document.getElementById('create-applicant-tab').addEventListener('click', function() {
-                applicantCreatedInput.value = 1;
-                // Uncheck all existing applicant selections
+            window.switchApplicantTab = function(tab) {
+                const selectExistingBtn = document.getElementById('selectExistingBtn');
+                const createNewBtn = document.getElementById('createNewBtn');
+                const existingSection = document.getElementById('existingApplicantSection');
+                const newSection = document.getElementById('newApplicantSection');
+                
+                if (tab === 'existing') {
+                    selectExistingBtn.classList.remove('btn-outline-primary');
+                    selectExistingBtn.classList.add('btn-primary');
+                    createNewBtn.classList.remove('btn-primary');
+                    createNewBtn.classList.add('btn-outline-secondary');
+                    existingSection.style.display = 'block';
+                    newSection.style.display = 'none';
+                    applicantCreatedInput.value = '0';
+                    
+                    // Uncheck new applicant inputs
+                    document.querySelectorAll('#newApplicantSection input').forEach(input => {
+                        input.value = '';
+                    });
+                } else {
+                    selectExistingBtn.classList.remove('btn-primary');
+                    selectExistingBtn.classList.add('btn-outline-primary');
+                    createNewBtn.classList.remove('btn-outline-secondary');
+                    createNewBtn.classList.add('btn-primary');
+                    existingSection.style.display = 'none';
+                    newSection.style.display = 'block';
+                    applicantCreatedInput.value = '1';
+                    
+                    // Uncheck existing applicant radios
+                    document.querySelectorAll('input[name="applicant_id"]').forEach(radio => {
+                        radio.checked = false;
+                    });
+                    document.getElementById('selectedApplicantInfo').classList.add('d-none');
+                }
+            };
+
+            window.selectApplicant = function(radio) {
+                const selectedInfo = document.getElementById('selectedApplicantInfo');
+                const selectedText = document.getElementById('selectedApplicantText');
+                const applicantName = radio.closest('label').querySelector('strong').textContent;
+                
+                selectedText.textContent = `Selected: ${applicantName}`;
+                selectedInfo.classList.remove('d-none');
+                applicantCreatedInput.value = '0';
+                
+                // Switch to existing tab if needed
+                window.switchApplicantTab('existing');
+            };
+
+            window.clearApplicantSelection = function() {
                 document.querySelectorAll('input[name="applicant_id"]').forEach(radio => {
                     radio.checked = false;
                 });
-                selectedApplicantInfo.classList.add('d-none');
-            });
-            
-            document.getElementById('select-applicant-tab').addEventListener('click', function() {
-                applicantCreatedInput.value = 0;
-            });
-            
+                document.getElementById('selectedApplicantInfo').classList.add('d-none');
+            };
+
             // Search functionality
-            applicantSearchInput.addEventListener('keyup', function() {
+            document.getElementById('applicantSearch').addEventListener('keyup', function() {
                 const searchTerm = this.value.toLowerCase();
-                const applicantItems = searchResults.querySelectorAll('.list-group-item');
+                const applicantItems = document.querySelectorAll('#searchResults .list-group-item');
+                const noResults = document.getElementById('noResults');
                 
                 if (searchTerm.length === 0) {
                     applicantItems.forEach(item => item.style.display = 'flex');
@@ -419,45 +457,19 @@
                     noResults.classList.remove('d-none');
                 }
             });
-            
-            // Clear search
-            clearSearchBtn.addEventListener('click', function() {
-                applicantSearchInput.value = '';
-                searchResults.querySelectorAll('.list-group-item').forEach(item => {
+
+            document.getElementById('clearSearch').addEventListener('click', function() {
+                document.getElementById('applicantSearch').value = '';
+                document.querySelectorAll('#searchResults .list-group-item').forEach(item => {
                     item.style.display = 'flex';
                 });
-                noResults.classList.add('d-none');
+                document.getElementById('noResults').classList.add('d-none');
             });
-            
-            // When selecting an existing applicant
-            document.querySelectorAll('input[name="applicant_id"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    if (this.checked) {
-                        applicantCreatedInput.value = 0;
-                        const applicantName = this.getAttribute('data-applicant-name');
-                        selectedApplicantText.textContent = `Selected: ${applicantName}`;
-                        selectedApplicantInfo.classList.remove('d-none');
-                        
-                        // Switch to select tab if we're on create tab
-                        document.getElementById('create-applicant-tab').classList.remove('active');
-                        document.getElementById('select-applicant-tab').classList.add('active');
-                        document.getElementById('create-applicant-pane').classList.remove('show', 'active');
-                        document.getElementById('select-applicant-pane').classList.add('show', 'active');
-                    }
-                });
-            });
-            
-            // Auto-switch to create tab if form had errors with new applicant
-            @if(empty(old('applicant_id')) && (!empty(old('new_first_name')) || !empty(old('new_last_name')) || !empty(old('new_email'))))
-                document.getElementById('create-applicant-tab').click();
-            @endif
-            
+
             // Form validation
             document.getElementById('documentForm').addEventListener('submit', function(e) {
                 const applicantCreated = applicantCreatedInput.value;
-                const hasSelectedApplicant = document.querySelector('input[name="applicant_id"]:checked') !== null;
                 
-                // Check if we're creating new applicant
                 if (applicantCreated === '1') {
                     const firstName = document.getElementById('new_first_name').value.trim();
                     const lastName = document.getElementById('new_last_name').value.trim();
@@ -466,36 +478,48 @@
                     if (!firstName || !lastName || !email) {
                         e.preventDefault();
                         alert('Please fill in all required fields for new applicant: First Name, Last Name, and Email.');
-                        document.getElementById('create-applicant-tab').click();
+                        window.switchApplicantTab('new');
                         return false;
                     }
                     
-                    // Validate email format
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                     if (!emailRegex.test(email)) {
                         e.preventDefault();
-                        alert('Please enter a valid email address for the new applicant.');
+                        alert('Please enter a valid email address.');
                         document.getElementById('new_email').focus();
                         return false;
                     }
-                } 
-                // Check if we selected existing applicant
-                else if (!hasSelectedApplicant) {
-                    e.preventDefault();
-                    alert('Please either select an existing applicant or create a new one.');
-                    return false;
+                } else {
+                    const hasSelectedApplicant = document.querySelector('input[name="applicant_id"]:checked') !== null;
+                    if (!hasSelectedApplicant) {
+                        e.preventDefault();
+                        alert('Please select an existing applicant or create a new one.');
+                        return false;
+                    }
                 }
                 
-                // Additional validation for document type
+                // Validate other required fields
                 if (!documentTypeSelect.value) {
                     e.preventDefault();
                     alert('Please select a document type.');
-                    documentTypeSelect.focus();
+                    return false;
+                }
+                
+                if (!document.getElementById('document_file').value) {
+                    e.preventDefault();
+                    alert('Please select a file to upload.');
                     return false;
                 }
             });
+
+            // Initialize form state
+            @if(old('applicant_created', '0') === '1' || (!empty(old('new_first_name')) && empty(old('applicant_id'))))
+                window.switchApplicantTab('new');
+            @endif
             
-            console.log('💡 Tip: Open browser console (F12) to see debug messages');
+            if (pillarSelect.value) {
+                pillarSelect.dispatchEvent(new Event('change'));
+            }
         });
     </script>
 @endsection
