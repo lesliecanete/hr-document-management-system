@@ -8,12 +8,27 @@ use Illuminate\Http\Request;
 
 class DocumentTypeController extends Controller
 {
-    public function index()
+      public function index(Request $request)  // Add Request parameter
     {
-        $documentTypes = DocumentType::with('pillar')->latest()->paginate(10);
-        $pillars = HRPillar::where('is_active', true)->get(); // Add this line
+        $query = DocumentType::with('pillar');
         
-        return view('settings.document-types', compact('documentTypes', 'pillars')); // Add pillars to compact
+        // Search filter - Add this block
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+        
+        $documentTypes = $query->latest()->paginate(10);
+        
+        // Preserve search query when paginating
+        $documentTypes->appends(request()->query());
+        
+        $pillars = HRPillar::where('is_active', true)->get();
+        
+        return view('settings.document-types', compact('documentTypes', 'pillars'));
     }
 
     public function create()

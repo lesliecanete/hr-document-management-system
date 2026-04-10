@@ -345,7 +345,7 @@
                                     Showing {{ $documents->firstItem() }} to {{ $documents->lastItem() }} of {{ $documents->total() }} results
                                 </div>
                                 <div>
-                                    {{ $documents->appends(request()->query())->links() }}
+                                    {{ $documentTypes->appends(request()->query())->links('pagination::bootstrap-5') }}
                                 </div>
                             </div>
                         </div>

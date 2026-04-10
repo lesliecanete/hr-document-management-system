@@ -111,20 +111,39 @@
                                                     </a>
                                                     @endif
                                                     @if(auth()->user()->canDeleteApplicant($applicant))
-                                                    <form action="{{ route('submitting-parties.destroy', $applicant) }}" 
-                                                          method="POST" class="d-inline"
-                                                          onsubmit="return confirm('Delete this applicant?')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-outline-danger" title="Delete">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </form>
+                                                     <!-- Delete Form -->
+                                                        @php
+                                                            $hasDocuments = $applicant->documents()->exists();
+                                                            $documentCount = $applicant->documents()->count();
+                                                        @endphp
+                                                        
+                                                         <form action="{{ route('submitting-parties.destroy', $applicant) }}" 
+                                                            method="POST" 
+                                                            class="d-inline" 
+                                                            onsubmit="return confirmDelete({{ $documentCount }}, '{{ $applicant->full_name }}')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" 
+                                                                    class="btn btn-outline-danger" 
+                                                                    title="{{ $hasDocuments ? "Cannot delete: Has {$documentCount} associated document(s)" : 'Delete Submitting Party' }}"
+                                                                    >
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
                                                     @endif
                                                 </div>
                                             </td>
                                         </tr>
                                         @endforeach
+                                        <script>
+                                        function confirmDelete(documentCount, name) {
+                                            if (documentCount > 0) {
+                                                alert(`Cannot delete "${name}" because they have ${documentCount} associated document(s). Please reassign or delete the documents first.`);
+                                                return false;
+                                            }
+                                            return confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`);
+                                        }
+                                        </script>
                                     </tbody>
                                 </table>
                             </div>

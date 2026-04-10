@@ -87,6 +87,13 @@ class ApplicantController extends Controller
             abort(403, 'You do not have permission to delete submitting parties.');
         }
         
+        // Check if submitting party has documents
+        if ($submitting_party->documents()->exists()) {
+            $documentCount = $submitting_party->documents()->count();
+            return back()->with('error', "Cannot delete '{$submitting_party->full_name}' because they have {$documentCount} associated document(s). Please reassign or delete the documents first.");
+        }
+        
+       
         $submitting_party->delete();
 
         return redirect()->route('submitting-parties.index')

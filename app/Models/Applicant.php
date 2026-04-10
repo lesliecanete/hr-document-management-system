@@ -49,4 +49,16 @@ class Applicant extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function hasDocuments()
+    {
+        return $this->documents()->exists();
+    }
+
+    /**
+     * Get count of associated documents
+     */
+    public function getDocumentsCountAttribute()
+    {
+        return $this->documents()->count();
+    }
 }
