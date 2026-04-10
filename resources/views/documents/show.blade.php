@@ -196,10 +196,20 @@
                     <div class="card-body">
                         <div class="d-grid gap-2">
                           
-                            <a href="{{ route('documents.edit', $document) }}" class="btn btn-warning">
-                                <i class="fas fa-edit"></i> Edit Details
-                            </a>
                            
+                            {{-- Only show Edit button if document is NOT archived --}}
+                            @if(auth()->user()->canEditDocument($document) && $document->status !== 'archived')
+                                <a href="{{ route('documents.edit', $document) }}" class="btn btn-warning">
+                                    <i class="fas fa-edit me-1"></i> Edit Details
+                                </a>
+                            @endif
+
+                            {{-- Show a badge to indicate it's archived --}}
+                            @if($document->status === 'archived')
+                                <span class="badge bg-secondary ms-2">
+                                    <i class="fas fa-archive me-1"></i> Archived
+                                </span>
+                            @endif
                             @if(auth()->user()->canDeleteDocument($document))
                             <form action="{{ route('documents.destroy', $document) }}" method="POST" 
                                   onsubmit="return confirm('Are you sure you want to delete this document? This action cannot be undone.')">

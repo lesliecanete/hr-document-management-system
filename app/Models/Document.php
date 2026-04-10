@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class Document extends Model
 {
-     protected static function boot()
+    protected static function boot()
     {
         parent::boot();
 
@@ -35,7 +36,7 @@ class Document extends Model
         return $this->belongsTo(DocumentType::class);
     }
 
-   public function applicant()
+    public function applicant()
     {
         return $this->belongsTo(Applicant::class);
     }
@@ -52,6 +53,10 @@ class Document extends Model
 
     public function updateStatus()
     {
+        // ✅ IMPORTANT: Don't change status of archived documents
+        if ($this->status === 'archived') {
+            return;
+        }   
         // First check: If document type has retention_years = 0 (permanent)
         if ($this->documentType && $this->documentType->retention_years == 0) {
             // Permanent documents should never be archived or expired
@@ -99,8 +104,9 @@ class Document extends Model
         }
         
         // Calculate days FROM today TO expiry
-        return $today->diffInDays($expiryDate) <= 90; // FIXED: today->diffInDays(expiry)
+        return $today->diffInDays($expiryDate) <= 90;
     }
+
     // Check if document has any file attached
     public function getHasFileAttribute()
     {
@@ -126,10 +132,11 @@ class Document extends Model
         
         return null;
     }
+
     // Get file extension
     public function getFileExtensionAttribute()
     {
-         $fileName = $this->file_name;
+        $fileName = $this->file_name;
     
         if ($fileName && $fileName !== 'Unknown') {
             return pathinfo($fileName, PATHINFO_EXTENSION);
@@ -239,29 +246,88 @@ class Document extends Model
         return round($bytes, $precision) . ' ' . $units[$pow];
     }
 
-    // Scope for active documents
+    // ==================== SCOPES ====================
+    
+    /**
+     * Scope to get only active documents (not expired and not archived)
+     */
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
     }
 
-    // Scope for expiring soon documents
+    /**
+     * Scope to get expiring soon documents
+     */
     public function scopeExpiringSoon($query)
     {
-        return $query->where('status', 'expiring_soon')
-                    ->orWhere(function($q) {
-                        $q->where('expiry_date', '>=', now())
-                          ->where('expiry_date', '<=', now()->addDays(30));
-                    });
+        return $query->where('status', 'expiring_soon');
     }
 
-    // Scope for expired documents
+    /**
+     * Scope to get expired documents (not yet archived)
+     */
     public function scopeExpired($query)
     {
-        return $query->where('status', 'archived')
-                    ->orWhere(function($q) {
-                        $q->where('expiry_date', '<', now());
-                    });
+        return $query->where('status', 'expired');
+    }
+
+    /**
+     * Scope to get archived documents
+     */
+    public function scopeArchived($query)
+    {
+        return $query->where('status', 'archived');
+    }
+
+    /**
+     * Scope to exclude archived documents (for default views)
+     */
+    public function scopeNotArchived($query)
+    {
+        return $query->where('status', '!=', 'archived');
+    }
+
+    /**
+     * Scope to get all non-archived documents (active + expiring_soon + expired)
+     */
+    public function scopeCurrent($query)
+    {
+        return $query->whereIn('status', ['active', 'expiring_soon', 'expired']);
+    }
+
+    /**
+     * Scope to get documents by status
+     */
+    public function scopeOfStatus($query, $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    /**
+     * Scope to search documents
+     */
+    public function scopeSearch($query, $searchTerm)
+    {
+        return $query->where(function($q) use ($searchTerm) {
+            $q->where('title', 'like', "%{$searchTerm}%")
+              ->orWhere('description', 'like', "%{$searchTerm}%")
+              ->orWhere('notes', 'like', "%{$searchTerm}%")
+              ->orWhereHas('applicant', function($q) use ($searchTerm) {
+                  $q->where('first_name', 'like', "%{$searchTerm}%")
+                    ->orWhere('last_name', 'like', "%{$searchTerm}%");
+              });
+        });
+    }
+
+    /**
+     * Scope to filter by pillar
+     */
+    public function scopeByPillar($query, $pillarName)
+    {
+        return $query->whereHas('documentType.pillar', function($q) use ($pillarName) {
+            $q->where('name', $pillarName);
+        });
     }
 
     // Check if document has an associated file
@@ -274,5 +340,14 @@ class Document extends Model
         
         return !empty($this->file_path) && file_exists($this->file_path);
     }
-
+    public function isArchived()
+    {
+        return $this->status === 'archived';
+    }
+    public function updateStatusIfNotArchived()
+    {
+        if ($this->status !== 'archived') {
+            $this->updateStatus();
+        }
+    }
 }

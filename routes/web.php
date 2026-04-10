@@ -40,9 +40,10 @@ Route::middleware(['auth'])->group(function () {
 
             
         // ❌ ARCHIVE: Admin & HR Manager ONLY (HR Staff cannot archive)
-        Route::post('/archive-expired', [DocumentController::class, 'archiveExpired'])->name('archive');
+        Route::post('/archive-expired', [DocumentController::class, 'archiveExpired'])->name('archive-expired');
     });
 
+    
     // =================== APPLICANTS ROUTES ===================
     Route::prefix('submitting-parties')->name('submitting-parties.')->group(function () {
         // ✅ ALL ROLES: Can view, create, add applicants

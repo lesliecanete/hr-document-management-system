@@ -6,7 +6,7 @@ use App\Models\Document;
 use App\Models\DocumentType;
 use App\Models\Applicant;
 use App\Models\HRPillar;
-use Illuminate\Support\Facades\DB; // Add this at the top
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
@@ -16,39 +16,68 @@ class DocumentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Document::with(['documentType', 'applicant', 'uploadedBy']);
+        $query = Document::with(['documentType.pillar', 'applicant', 'uploadedBy']);
 
+        // First, update all document statuses to ensure they're current
+        //$this->updateAllDocumentStatuses();
+         if (!$request->filled('status') || $request->status !== 'archived') {
+            $query->where('status', '!=', 'archived');
+        }
+        // Search filter
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('title', 'like', "%{$request->search}%")
+                ->orWhere('description', 'like', "%{$request->search}%")
+                ->orWhere('notes', 'like', "%{$request->search}%")
+                ->orWhereHas('applicant', function($q) use ($request) {
+                    $q->where('first_name', 'like', "%{$request->search}%")
+                        ->orWhere('last_name', 'like', "%{$request->search}%")
+                        ->orWhere('email', 'like', "%{$request->search}%");
+                });
+            });
+        }
+
+        // Pillar filter
         if ($request->filled('pillar')) {
             $query->whereHas('documentType.pillar', function($q) use ($request) {
                 $q->where('name', $request->pillar);
             });
         }
 
+        // Document type filter
         if ($request->filled('document_type_id')) {
             $query->where('document_type_id', $request->document_type_id);
         }
 
+        // Status filter - IMPORTANT: Handle status filtering
         if ($request->filled('status')) {
+            // If specific status is selected, show only that status
             $query->where('status', $request->status);
+        } else {
+            // If NO status filter is selected, EXCLUDE archived documents by default
+            $query->where('status', '!=', 'archived');
         }
 
-        if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('title', 'like', "%{$request->search}%")
-                  ->orWhere('description', 'like', "%{$request->search}%")
-                  ->orWhereHas('applicant', function($q) use ($request) {
-                      $q->where('first_name', 'like', "%{$request->search}%")
-                        ->orWhere('last_name', 'like', "%{$request->search}%")
-                        ->orWhere('applicant_id', 'like', "%{$request->search}%");
-                  });
-            });
-        }
-
+        // Sort by latest first
         $documents = $query->orderBy('created_at', 'desc')->paginate(20);
+        
+        // Preserve query string when paginating
+        $documents->appends($request->query());
+        
+        // Get data for filters
         $pillars = HRPillar::where('is_active', true)->get();
         $documentTypes = DocumentType::where('is_active', true)->get();
 
         return view('documents.index', compact('documents', 'pillars', 'documentTypes'));
+    }
+
+    // Add this helper method to update statuses
+    private function updateAllDocumentStatuses()
+    {
+        $documents = Document::with('documentType')->get();
+        foreach ($documents as $document) {
+            $document->updateStatus();
+        }
     }
 
     public function create()
@@ -80,7 +109,7 @@ class DocumentController extends Controller
             // Get document types
             $documentTypes = DocumentType::where('pillar_id', $pillarId)
                 ->where('is_active', true)
-                ->get(['id', 'name', 'retention_years', 'requires_person']);
+                ->get(['id', 'name', 'retention_years', 'requires_applicant']); // Fixed: changed 'requires_person' to 'requires_applicant'
 
             \Log::info("Found {$documentTypes->count()} document types for pillar {$pillarId}");
             
@@ -92,6 +121,7 @@ class DocumentController extends Controller
             return response()->json(['error' => 'Internal server error'], 500);
         }
     }
+
     public function store(Request $request)
     {
         // Validate all fields including new applicant fields
@@ -168,15 +198,15 @@ class DocumentController extends Controller
             $filePath = $file->storeAs('documents', $fileName, 'public');
 
             // Calculate expiry date based on retention policy
-            //$expiryDate = Carbon::parse($validated['document_date'])->addYears($documentType->retention_years);
             $expiryDate = null;
 
             if ($documentType->retention_years > 0) {
                 $expiryDate = Carbon::parse($validated['document_date'])
                     ->addYears($documentType->retention_years);
             }
+            
             // Create the document
-            Document::create([
+            $document = Document::create([
                 'title' => $validated['title'],
                 'description' => $validated['description'] ?? null,
                 'file_name' => $originalName,
@@ -190,6 +220,9 @@ class DocumentController extends Controller
                 'expiry_date' => $expiryDate,
                 'notes' => $validated['notes'] ?? null,
             ]);
+
+            // Update status based on expiry date
+            $document->updateStatus();
 
             DB::commit();
 
@@ -213,6 +246,9 @@ class DocumentController extends Controller
 
     public function show(Document $document)
     {
+        $document->updateStatusIfNotArchived();
+      
+        
         return view('documents.show', compact('document'));
     }
 
@@ -221,8 +257,13 @@ class DocumentController extends Controller
         if (!auth()->user()->canEditDocument($document)) {
             abort(403, 'You can only edit documents you uploaded.');
         }
+        
+        if ($document->status === 'archived') {
+            return redirect()->route('documents.show', $document)
+                ->with('error', 'Archived documents cannot be edited.');
+        }
         $pillars = HRPillar::where('is_active', true)->get();
-        $applicants = applicant::where('status', 'active')->get();
+        $applicants = Applicant::where('status', 'active')->get();
         $documentTypes = DocumentType::where('pillar_id', $document->documentType->pillar_id)
             ->where('is_active', true)
             ->get();
@@ -232,10 +273,10 @@ class DocumentController extends Controller
 
     public function update(Request $request, Document $document)
     {
-            
         if (!auth()->user()->canEditDocument($document)) {
             abort(403, 'You can only edit documents you uploaded.');
         }
+        
         $request->validate([
             'title' => 'required|string|max:255',
             'document_type_id' => 'required|exists:document_types,id',
@@ -258,19 +299,20 @@ class DocumentController extends Controller
         // Handle file upload if a new file is provided
         if ($request->hasFile('document_file')) {
             // Delete old file if exists
-            if ($document->document_file) {
-                $this->deleteFile($document->document_file);
+            if ($document->file_path) {
+                $this->deleteFile($document->file_path);
             }
 
             // Upload new file
             $file = $request->file('document_file');
-            $fileName = time() . '_' . $file->getClientOriginalName();
+            $originalName = $file->getClientOriginalName();
+            $fileName = time() . '_' . preg_replace('/[^A-Za-z0-9.]/', '_', $originalName);
             $filePath = $file->storeAs('documents', $fileName, 'public');
             
-            $updateData['document_file'] = $filePath;
-            $updateData['file_name'] = $file->getClientOriginalName();
+            $updateData['file_path'] = $filePath;
+            $updateData['file_name'] = $originalName;
             $updateData['file_size'] = $file->getSize();
-            $updateData['file_type'] = $file->getClientOriginalExtension();
+            $updateData['file_type'] = $file->getMimeType();
         }
 
         // Get the new document type
@@ -280,17 +322,13 @@ class DocumentController extends Controller
         $documentDate = Carbon::parse($request->document_date);
         
         // Calculate expiry date from document date + retention years
-        //$updateData['expiry_date'] = $documentDate->copy()->addYears($documentType->retention_years);
         if ($documentType->retention_years > 0) {
-            $updateData['expiry_date'] = $documentDate
-                ->copy()
-                ->addYears($documentType->retention_years);
+            $updateData['expiry_date'] = $documentDate->copy()->addYears($documentType->retention_years);
         } else {
             $updateData['expiry_date'] = null;
         }
 
         $document->update($updateData);
-
 
         // Update document status based on new expiry date
         $document->updateStatus();
@@ -313,6 +351,10 @@ class DocumentController extends Controller
 
     public function download(Document $document)
     {
+        if (!$document->file_path || !Storage::disk('public')->exists($document->file_path)) {
+            return back()->with('error', 'File not found.');
+        }
+        
         return Storage::disk('public')->download($document->file_path, $document->file_name);
     }
 
@@ -321,27 +363,56 @@ class DocumentController extends Controller
         if (!auth()->user()->canDeleteDocument($document)) {
             abort(403, 'You do not have permission to delete documents.');
         }
-        Storage::disk('public')->delete($document->file_path);
+        
+        // Delete the file
+        if ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
+            Storage::disk('public')->delete($document->file_path);
+        }
+        
         $document->delete();
 
         return redirect()->route('documents.index')->with('success', 'Document deleted successfully.');
     }
 
-    public function archiveExpired()
+    /**
+     * Archive expired documents (change status to 'archived')
+     * Updated to use 'expired' status instead of direct 'archived'
+     */
+   public function archiveExpired()
     {
-       /* $expiredDocuments = Document::where('expiry_date', '<=', Carbon::today())
-            ->where('status', '!=', 'archived')
-            ->get(); */
+        // First, update all document statuses to ensure they're current
+        $documents = Document::with('documentType')->get();
+        foreach ($documents as $document) {
+            $document->updateStatus();
+        }
+        
+        // Now get documents that are expired (status will be 'expired' after updateStatus)
+        $expiredDocuments = Document::where('status', 'expired')->get();
 
-        $expiredDocuments = Document::whereNotNull('expiry_date')
-        ->where('expiry_date', '<=', Carbon::today())
-        ->where('status', '!=', 'archived')
-        ->get();
         foreach ($expiredDocuments as $document) {
             $document->update(['status' => 'archived']);
         }
 
-        return back()->with('success', count($expiredDocuments) . ' documents archived.');
+        $count = count($expiredDocuments);
+        $message = $count > 0 
+            ? "{$count} document(s) have been archived." 
+            : "No expired documents found to archive.";
+            
+        return back()->with('success', $message);
+    }
+    /**
+     * Get documents expiring soon (for dashboard or notifications)
+     */
+    public function getExpiringSoon()
+    {
+        $expiringSoon = Document::where('status', 'expiring_soon')
+            ->where('expiry_date', '<=', Carbon::today()->addDays(90))
+            ->where('expiry_date', '>', Carbon::today())
+            ->orderBy('expiry_date', 'asc')
+            ->limit(10)
+            ->get();
+            
+        return response()->json($expiringSoon);
     }
 
     public function generateQRCode(Document $document, Request $request)
@@ -351,9 +422,6 @@ class DocumentController extends Controller
         
         // Generate the FULL PUBLIC URL to the file
         $fileUrl = asset('storage/' . $document->file_path);
-        
-        // Add cache buster if needed
-        // $fileUrl .= '?t=' . time();
         
         if ($format === 'png') {
             return response(QrCode::format('png')->size($size)->generate($fileUrl))
